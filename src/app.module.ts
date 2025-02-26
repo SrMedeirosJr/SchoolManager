@@ -3,13 +3,13 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
 import { UsersModule } from './users/users.module';
-// import { ChildrenModule } from './children/children.module';
 //import { EmployeesModule } from './employees/employees.module';
 //import { FinanceModule } from './finance/finance.module';
 import { User } from './users/user.entity';
-//import { Child } from './children/child.entity';
+import { Child } from './children/child.entity';
 //import { Employee } from './employees/employee.entity';
 //import { Finance } from './finance/finance.entity';
+import { ChildrenModule } from './children/children.module';
 
 
 @Module({
@@ -22,14 +22,13 @@ import { User } from './users/user.entity';
       username: process.env.DB_USER || 'root',
       password: process.env.DB_PASSWORD || 'root',
       database: process.env.DB_NAME || 'turminha_chave',
-      entities: [User], // , Child, Employee, Finance
+      entities: [User, Child],
       autoLoadEntities: true,
-      synchronize: false, // Usaremos migrations
+      synchronize: false, // 
     }),
     UsersModule,
-    //ChildrenModule,
-   // EmployeesModule,
-   // FinanceModule,
+    ChildrenModule,
+
   ],
 })
 export class AppModule {}

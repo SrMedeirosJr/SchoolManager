@@ -1,6 +1,7 @@
 import 'reflect-metadata';
 import { DataSource } from 'typeorm';
 import { User } from './src/users/user.entity';
+import { Child } from './src/children/child.entity';
 
 export const AppDataSource = new DataSource({
   type: 'mysql',
@@ -9,7 +10,7 @@ export const AppDataSource = new DataSource({
   username: process.env.DB_USER || 'root',
   password: process.env.DB_PASSWORD || 'root',
   database: process.env.DB_NAME || 'turminha_chave',
-  entities: [User], // Adicione mais entidades aqui conforme necessário
+  entities: [User, Child,], // Adicione mais entidades aqui conforme necessário
   migrations: ['src/migrations/*.ts'], // Caminho das migrations
   synchronize: false, // Usaremos migrations
   logging: true,
