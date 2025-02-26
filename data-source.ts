@@ -3,6 +3,7 @@ import { DataSource } from 'typeorm';
 import { User } from './src/users/user.entity';
 import { Child } from './src/children/child.entity';
 import { Employee } from './src/employees/employees.entity';
+import { Finance } from './src/finance/finance.entity';
 
 
 export const AppDataSource = new DataSource({
@@ -12,7 +13,7 @@ export const AppDataSource = new DataSource({
   username: process.env.DB_USER || 'root',
   password: process.env.DB_PASSWORD || 'root',
   database: process.env.DB_NAME || 'turminha_chave',
-  entities: [User, Child, Employee], 
+  entities: [User, Child, Employee, Finance], 
   migrations: ['src/migrations/*.ts'], 
   synchronize: false,
   logging: true,

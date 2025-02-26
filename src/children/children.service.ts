@@ -7,7 +7,7 @@ import { NotFoundException } from '@nestjs/common';
 @Injectable()
 export class ChildrenService {
   constructor(
-    @InjectRepository(Child) // ✅ Certifique-se de que essa linha está correta
+    @InjectRepository(Child)
     private childrenRepository: Repository<Child>,
   ) {}
 

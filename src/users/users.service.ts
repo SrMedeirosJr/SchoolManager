@@ -26,7 +26,7 @@ export class UsersService {
 
   async findByName(name: string): Promise<User | undefined> {
     const user = await this.usersRepository.findOne({ where: { name } });
-    return user ?? undefined; // ✅ Corrigido
+    return user ?? undefined; 
   }
 
   async login(name: string, password: string) {
@@ -44,7 +44,7 @@ export class UsersService {
   }
 
   async findAll(): Promise<User[]> {
-    return this.usersRepository.find(); // ✅ Retorna todos os usuários
+    return this.usersRepository.find(); 
   }
 
   async update(id: number, updateUserDto: CreateUserDto): Promise<User | undefined> {
@@ -57,7 +57,7 @@ export class UsersService {
     });
   
     const updatedUser = await this.usersRepository.findOne({ where: { id } });
-    return updatedUser ?? undefined; // ✅ Corrigido
+    return updatedUser ?? undefined; 
   }
 
   async remove(id: number): Promise<void> {
