@@ -10,6 +10,7 @@ import { Finance } from './finance/finance.entity';
 import { ChildrenModule } from './children/children.module';
 import { EmployeesModule } from './employees/employees.module';
 import { FinanceModule } from './finance/finance.module';
+import { DashboardModule } from './dashboard/dashboard.module';
 
 
 @Module({
@@ -30,6 +31,7 @@ import { FinanceModule } from './finance/finance.module';
     ChildrenModule,
     EmployeesModule,
     FinanceModule,
+    DashboardModule,
 
   ],
 })

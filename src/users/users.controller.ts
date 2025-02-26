@@ -26,10 +26,10 @@ import {
       return this.usersService.login(body.name, body.password);
     }
 
-    @UseGuards(AuthGuard) // 🔒 Protegido por autenticação
-  @Get()
-  async findAll() {
-    return this.usersService.findAll();
+    @UseGuards(AuthGuard)
+    @Get()
+    async findAll() {
+     return this.usersService.findAll();
   }
   
     @UseGuards(AuthGuard)
