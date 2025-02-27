@@ -10,15 +10,29 @@ export class DashboardController {
     return this.dashboardService.getGeneralStats();
   }
 
+  @Get('stats-by-month')
+  async getStatsByMonth(@Query('month') month: string) {
+    const monthNumber = parseInt(month, 10);
+    if (isNaN(monthNumber) || monthNumber < 1 || monthNumber > 12) {
+      return { error: 'Mês inválido. Use um valor entre 1 e 12.' };
+    }
+    return this.dashboardService.getStatsByMonth(monthNumber);
+  }
+
+  @Get('records-by-month')
+  async getRecordsByMonth(@Query('month') month: string) {
+  const monthNumber = parseInt(month, 10);
+  if (isNaN(monthNumber) || monthNumber < 1 || monthNumber > 12) {
+    return { error: 'Mês inválido. Use um valor entre 1 e 12.' };
+  }
+  return this.dashboardService.getRecordsByMonth(monthNumber);
+}
+
   @Get('children-payments')
   async getChildrenPaymentStatus() {
     return this.dashboardService.getChildrenPaymentStatus();
   }
 
-  @Get('financial-history')
-  async getFinancialHistory(@Query('startDate') startDate: string, @Query('endDate') endDate: string) {
-    return this.dashboardService.getFinancialHistory(startDate, endDate);
-  }
 
   @Get('average-tuition')
   async getAverageTuitionFee() {
