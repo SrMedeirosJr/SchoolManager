@@ -112,49 +112,46 @@ export class DashboardService {
     const startDate = this.setStartOfMonth(year, month || new Date().getMonth() + 1);
     const endDate = this.setEndOfMonth(year, month || new Date().getMonth() + 1);
 
-    // 🔹 Buscar crianças cadastradas
-    const children = await this.childRepository.find({
-      select: ['id', 'fullName', 'dueDate'],
-    });
+    const result = await this.childRepository
+        .createQueryBuilder('child')
+        .leftJoinAndSelect(
+            'finance',
+            'finance',
+            'child.id = finance.childId AND finance.date BETWEEN :startDate AND :endDate',
+            { startDate, endDate }
+        )
+        .select([
+            'child.id AS id',
+            'child.fullName AS fullName',
+            'child.dueDate AS dueDate',
+            'COALESCE(finance.amount, "") AS amount',
+            'CASE WHEN finance.childId IS NOT NULL THEN "Pago" ELSE "Não Pago" END AS status'
+        ])
+        .where('child.enrollmentDate <= :endDate', { endDate })
+        .orderBy('child.dueDate', 'ASC')
+        .getRawMany();
 
-    // 🔹 Buscar pagamentos SOMENTE dentro do mês filtrado
-    const financeRecords = await this.financeRepository
-      .createQueryBuilder('finance')
-      .select(['finance.childId', 'SUM(finance.amount) as totalPaid'])
-      .where('finance.type = :type', { type: 'Faturamento' }) 
-      .andWhere('finance.date BETWEEN :startDate AND :endDate', { startDate, endDate }) // 🔹 Filtrando pelo mês correto
-      .groupBy('finance.childId')
-      .getRawMany();
-
-    // 🔹 Mapear pagamentos por childId
-    const paymentsMap = new Map<number, { totalPaid: string }>();
-    financeRecords.forEach((record) => {
-      paymentsMap.set(record.childId, { totalPaid: parseFloat(record.totalPaid).toFixed(2) });
-    });
-
-    // 🔹 Organizar crianças por dueDate
+    // 🔹 Agrupar os resultados por dueDate
     const groupedByDueDate: Record<string, any[]> = {};
+    result.forEach((child) => {
+        const dueDateKey = `dueDate ${child.dueDate}`;
 
-    children.forEach((child) => {
-      const dueDateKey = `dueDate ${child.dueDate}`;
+        if (!groupedByDueDate[dueDateKey]) {
+            groupedByDueDate[dueDateKey] = [];
+        }
 
-      if (!groupedByDueDate[dueDateKey]) {
-        groupedByDueDate[dueDateKey] = [];
-      }
-
-      const payment = paymentsMap.get(child.id);
-
-      groupedByDueDate[dueDateKey].push({
-        id: child.id,
-        fullName: child.fullName,
-        dueDate: child.dueDate,
-        amount: payment ? payment.totalPaid : "",
-        Status: payment ? "Pago" : "Não Pago",
-      });
+        groupedByDueDate[dueDateKey].push({
+            id: child.id,
+            fullName: child.fullName,
+            dueDate: child.dueDate,
+            amount: child.amount,
+            Status: child.status
+        });
     });
 
     return groupedByDueDate;
-  }
+}
+
 
 
   async getAverageTuitionFee() {

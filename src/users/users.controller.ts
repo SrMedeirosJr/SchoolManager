@@ -7,6 +7,7 @@ import {
     Delete,
     UseGuards,
     Get,
+    Request,
   } from '@nestjs/common';
   import { UsersService } from './users.service';
   import { CreateUserDto } from './dto/create-user.dto';
@@ -24,6 +25,12 @@ import {
     @Post('login')
     async login(@Body() body) {
       return this.usersService.login(body.name, body.password);
+    }
+
+    @Get('profile')
+    @UseGuards(new AuthGuard())
+    async getProfile(@Request() req) {
+    return req.user; // Retorna os dados do usuário autenticado
     }
 
     @UseGuards(AuthGuard)
