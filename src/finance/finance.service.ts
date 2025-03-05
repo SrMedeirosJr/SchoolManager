@@ -2,16 +2,44 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Finance } from './finance.entity';
+import { CreateFinanceDto } from './dto/create-finance.dto';
+import { Child } from '../children/child.entity';
+import { Employee } from '../employees/employees.entity';
 
 @Injectable()
 export class FinanceService {
   constructor(
     @InjectRepository(Finance)
     private financeRepository: Repository<Finance>,
+
+    @InjectRepository(Child)
+    private childRepository: Repository<Child>,
+
+    @InjectRepository(Employee)
+    private employeeRepository: Repository<Employee>,
   ) {}
 
-  async create(createFinanceDto: Partial<Finance>): Promise<Finance> {
-    const finance = this.financeRepository.create(createFinanceDto);
+  async create(createFinanceDto: CreateFinanceDto): Promise<Finance> {
+    const { childId, employeeId, ...financeData } = createFinanceDto;
+
+    const finance = this.financeRepository.create(financeData);
+
+    if (childId) {
+      const child = await this.childRepository.findOne({ where: { id: childId } });
+      if (!child) {
+        throw new NotFoundException(`Criança com ID ${childId} não encontrada.`);
+      }
+      finance.child = child;
+    }
+
+    if (employeeId) {
+      const employee = await this.employeeRepository.findOne({ where: { id: employeeId } });
+      if (!employee) {
+        throw new NotFoundException(`Funcionário com ID ${employeeId} não encontrado.`);
+      }
+      finance.employee = employee;
+    }
+
     return this.financeRepository.save(finance);
   }
 
@@ -19,9 +47,9 @@ export class FinanceService {
     const finances = await this.financeRepository.find({
       relations: ['child', 'employee'],
     });
-  
+
     return finances.map(finance => {
-      const formattedFinance: any = {
+      return {
         id: finance.id,
         date: finance.date,
         description: finance.description,
@@ -29,21 +57,11 @@ export class FinanceService {
         amount: finance.amount,
         paymentMethod: finance.paymentMethod,
         type: finance.type,
+        childId: finance.child ? finance.child.id : null,
+        employeeId: finance.employee ? finance.employee.id : null,
       };
-  
-      if (finance.child) {
-        formattedFinance.childId = finance.child.id;
-      }
-  
-      if (finance.employee) {
-        formattedFinance.employeeId = finance.employee.id;
-      }
-  
-      return formattedFinance;
     });
   }
-  
-  
 
   async findOne(id: number): Promise<Finance> {
     const finance = await this.financeRepository.findOne({ where: { id } });

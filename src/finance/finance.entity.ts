@@ -7,7 +7,7 @@ export class Finance {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ type: 'date' })
+  @Column({ type: 'date', nullable: false })
   date: Date;
 
   @Column()

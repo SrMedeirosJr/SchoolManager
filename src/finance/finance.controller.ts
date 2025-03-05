@@ -1,13 +1,14 @@
 import { Controller, Get, Post, Body, Param, Put, Delete } from '@nestjs/common';
 import { FinanceService } from './finance.service';
 import { Finance } from './finance.entity';
+import { CreateFinanceDto } from './dto/create-finance.dto'; // ✅ Importamos o DTO corretamente
 
 @Controller('finance')
 export class FinanceController {
   constructor(private readonly financeService: FinanceService) {}
 
   @Post()
-  create(@Body() createFinanceDto: Partial<Finance>): Promise<Finance> {
+  create(@Body() createFinanceDto: CreateFinanceDto): Promise<Finance> {
     return this.financeService.create(createFinanceDto);
   }
 
