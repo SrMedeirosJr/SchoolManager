@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 import { Child } from '../children/child.entity';
 import { Employee } from '../employees/employees.entity';
 
@@ -30,4 +30,25 @@ export class Finance {
 
   @Column()
   type: string;
+
+  @Column({ default: false })
+  deleted: boolean;
+  
+  @Column({ nullable: true })
+  createdBy: number;
+  
+  @Column({ nullable: true })
+  updatedBy: number;
+  
+  @Column({ nullable: true })
+  deletedBy: number;
+  
+  @CreateDateColumn()
+  createdAt: Date;
+  
+  @UpdateDateColumn({ nullable: true })
+  updatedAt: Date;
+  
+  @Column({ type: "timestamp", nullable: true })
+  deletedAt: Date;
 }

@@ -11,6 +11,7 @@ import { ChildrenModule } from './children/children.module';
 import { EmployeesModule } from './employees/employees.module';
 import { FinanceModule } from './finance/finance.module';
 import { DashboardModule } from './dashboard/dashboard.module';
+import { CategoryModule } from './category/category.module';
 
 
 @Module({
@@ -32,6 +33,7 @@ import { DashboardModule } from './dashboard/dashboard.module';
     EmployeesModule,
     FinanceModule,
     DashboardModule,
+    CategoryModule,
 
   ],
 })
