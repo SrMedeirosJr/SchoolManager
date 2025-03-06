@@ -1,4 +1,14 @@
-import { Controller, Get, Post, Body, Put, Param, Delete, UseGuards } from '@nestjs/common';
+import { 
+  Controller, 
+  Get, 
+  Post, 
+  Body, 
+  Put, 
+  Param, 
+  Delete, 
+  UseGuards, 
+  Request 
+} from '@nestjs/common';
 import { ChildrenService } from './children.service';
 import { CreateChildDto } from './dto/create-child.dto';
 import { AuthGuard } from '../auth/auth.guard';
@@ -9,8 +19,8 @@ export class ChildrenController {
 
   @UseGuards(AuthGuard)
   @Post()
-  async create(@Body() createChildDto: CreateChildDto) {
-    return this.childrenService.create(createChildDto);
+  async create(@Body() createChildDto: CreateChildDto, @Request() req) {
+    return this.childrenService.create(createChildDto, req.user.id); // Passa o ID do usuário autenticado
   }
 
   @UseGuards(AuthGuard)
@@ -27,13 +37,13 @@ export class ChildrenController {
 
   @UseGuards(AuthGuard)
   @Put(':id')
-  async update(@Param('id') id: number, @Body() updateChildDto: Partial<CreateChildDto>) {
-    return this.childrenService.update(id, updateChildDto);
+  async update(@Param('id') id: number, @Body() updateChildDto: Partial<CreateChildDto>, @Request() req) {
+    return this.childrenService.update(id, updateChildDto, req.user.id); // Passa o ID do usuário autenticado
   }
 
   @UseGuards(AuthGuard)
   @Delete(':id')
-  async remove(@Param('id') id: number) {
-    return this.childrenService.remove(id);
+  async remove(@Param('id') id: number, @Request() req) {
+    return this.childrenService.remove(id, req.user.id); // Passa o ID do usuário autenticado
   }
 }

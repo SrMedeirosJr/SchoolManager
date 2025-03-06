@@ -59,7 +59,7 @@ async function importFinance() {
       const transaction: Partial<Finance> = {
         date: excelDateToJSDate(finance["Data"]), // Corrigida a conversão de data
         description: finance["Descrição"],
-        category: finance["Categoria"],
+        //category: finance["Categoria"],
         amount: parseFloat(finance["Valor"].toString().replace(',', '.')), // 🔹 Converte corretamente
         paymentMethod: finance["Forma de Pagamento"],
         type: finance["Tipo"], // 'Faturamento' ou 'Despesa'

@@ -10,8 +10,11 @@ export class EmployeesService {
     private employeesRepository: Repository<Employee>,
   ) {}
 
-  async create(createEmployeeDto: Partial<Employee>): Promise<Employee> {
-    const employee = this.employeesRepository.create(createEmployeeDto);
+  async create(createEmployeeDto: Partial<Employee>, userId: number): Promise<Employee> {
+    const employee = this.employeesRepository.create({
+      ...createEmployeeDto,
+      createdBy: userId, // Rastreia quem criou
+    });
     return this.employeesRepository.save(employee);
   }
 
@@ -27,13 +30,18 @@ export class EmployeesService {
     return employee;
   }
 
-  async update(id: number, updateEmployeeDto: Partial<Employee>): Promise<Employee> {
-    await this.employeesRepository.update(id, updateEmployeeDto);
+  async update(id: number, updateEmployeeDto: Partial<Employee>, userId: number): Promise<Employee> {
+    await this.employeesRepository.update(id, {
+      ...updateEmployeeDto,
+      updatedBy: userId, // Rastreia quem atualizou
+    });
     return this.findOne(id);
   }
 
-  async remove(id: number): Promise<void> {
+  async remove(id: number, userId: number): Promise<void> {
     const employee = await this.findOne(id);
+    employee.deletedBy = userId; // Rastreia quem deletou
+    await this.employeesRepository.save(employee); // Salva a alteração antes de remover
     await this.employeesRepository.remove(employee);
   }
 }

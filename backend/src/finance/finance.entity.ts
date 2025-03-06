@@ -1,6 +1,7 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, CreateDateColumn, UpdateDateColumn, JoinColumn } from 'typeorm';
 import { Child } from '../children/child.entity';
 import { Employee } from '../employees/employees.entity';
+import { Category } from '../category/category.entity';
 
 @Entity()
 export class Finance {
@@ -13,8 +14,9 @@ export class Finance {
   @Column()
   description: string;
 
-  @Column()
-  category: string;
+  @ManyToOne(() => Category, { eager: true }) // Obtém automaticamente a categoria ao buscar uma transação
+  @JoinColumn({ name: 'categoryId' })
+  category: Category;
 
   @ManyToOne(() => Child, (child) => child.id, { nullable: true, onDelete: 'SET NULL' })
   child?: Child | null;
@@ -33,22 +35,22 @@ export class Finance {
 
   @Column({ default: false })
   deleted: boolean;
-  
+
   @Column({ nullable: true })
   createdBy: number;
-  
+
   @Column({ nullable: true })
   updatedBy: number;
-  
+
   @Column({ nullable: true })
   deletedBy: number;
-  
+
   @CreateDateColumn()
   createdAt: Date;
-  
+
   @UpdateDateColumn({ nullable: true })
   updatedAt: Date;
-  
-  @Column({ type: "timestamp", nullable: true })
+
+  @Column({ type: 'timestamp', nullable: true })
   deletedAt: Date;
 }

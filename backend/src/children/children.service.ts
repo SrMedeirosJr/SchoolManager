@@ -1,8 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Child } from './child.entity';
-import { NotFoundException } from '@nestjs/common';
 
 @Injectable()
 export class ChildrenService {
@@ -11,8 +10,11 @@ export class ChildrenService {
     private childrenRepository: Repository<Child>,
   ) {}
 
-  async create(createChildDto: Partial<Child>): Promise<Child> {
-    const child = this.childrenRepository.create(createChildDto);
+  async create(createChildDto: Partial<Child>, userId: number): Promise<Child> {
+    const child = this.childrenRepository.create({
+      ...createChildDto,
+      createdBy: userId, // Rastreia quem criou
+    });
     return this.childrenRepository.save(child);
   }
 
@@ -28,12 +30,18 @@ export class ChildrenService {
     return child;
   }
 
-  async update(id: number, updateChildDto: Partial<Child>): Promise<Child> {
-    await this.childrenRepository.update(id, updateChildDto);
+  async update(id: number, updateChildDto: Partial<Child>, userId: number): Promise<Child> {
+    await this.childrenRepository.update(id, {
+      ...updateChildDto,
+      updatedBy: userId, // Rastreia quem atualizou
+    });
     return this.findOne(id);
   }
 
-  async remove(id: number): Promise<void> {
-    await this.childrenRepository.delete(id);
+  async remove(id: number, userId: number): Promise<void> {
+    const child = await this.findOne(id);
+    child.deletedBy = userId; // Rastreia quem deletou
+    await this.childrenRepository.save(child); // Salva a alteração antes de remover
+    await this.childrenRepository.remove(child);
   }
 }

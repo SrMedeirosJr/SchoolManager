@@ -1,4 +1,3 @@
-// Importações principais
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
@@ -12,6 +11,7 @@ import { EmployeesModule } from './employees/employees.module';
 import { FinanceModule } from './finance/finance.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { CategoryModule } from './category/category.module';
+import { Category } from './category/category.entity';
 
 
 @Module({
@@ -24,7 +24,7 @@ import { CategoryModule } from './category/category.module';
       username: process.env.DB_USER || 'root',
       password: process.env.DB_PASSWORD || 'root',
       database: process.env.DB_NAME || 'turminha_chave',
-      entities: [User, Child, Employee, Finance],
+      entities: [User, Child, Employee, Finance, Category],
       autoLoadEntities: true,
       synchronize: false, // 
     }),

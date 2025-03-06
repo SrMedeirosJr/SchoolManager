@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 
 @Entity()
 export class Child {
@@ -37,4 +37,25 @@ export class Child {
 
   @Column({ nullable: true })
   motherPhone?: string;
+
+  @Column({ default: false })
+  deleted: boolean;
+      
+  @Column({ nullable: true })
+  createdBy: number;
+      
+  @Column({ nullable: true })
+  updatedBy: number;
+      
+  @Column({ nullable: true })
+  deletedBy: number;
+      
+  @CreateDateColumn()
+  createdAt: Date;
+      
+  @UpdateDateColumn({ nullable: true })
+  updatedAt: Date;
+      
+  @Column({ type: "timestamp", nullable: true })
+  deletedAt: Date;
 }

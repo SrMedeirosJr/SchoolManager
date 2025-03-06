@@ -13,12 +13,13 @@ export class UsersService {
     private usersRepository: Repository<User>,
   ) {}
 
-  async create(createUserDto: CreateUserDto): Promise<User> {
+  async create(createUserDto: CreateUserDto, userId: number): Promise<User> {
     const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
     const user = this.usersRepository.create({
       name: createUserDto.name,
       password: hashedPassword,
       role: createUserDto.role || 'user',
+      createdBy: userId, // Salvando quem criou o usuário
     });
 
     return this.usersRepository.save(user);
@@ -47,20 +48,23 @@ export class UsersService {
     return this.usersRepository.find(); 
   }
 
-  async update(id: number, updateUserDto: CreateUserDto): Promise<User | undefined> {
+  async update(id: number, updateUserDto: CreateUserDto, userId: number): Promise<User | undefined> {
     const hashedPassword = updateUserDto.password
       ? await bcrypt.hash(updateUserDto.password, 10)
       : undefined;
+
     await this.usersRepository.update(id, {
       ...updateUserDto,
       password: hashedPassword,
+      updatedBy: userId, // Salvando quem atualizou o usuário
     });
-  
+
     const updatedUser = await this.usersRepository.findOne({ where: { id } });
     return updatedUser ?? undefined; 
   }
 
-  async remove(id: number): Promise<void> {
+  async remove(id: number, userId: number): Promise<void> {
+    await this.usersRepository.update(id, { deletedBy: userId }); // Salvando quem deletou o usuário
     await this.usersRepository.delete(id);
   }
 }
