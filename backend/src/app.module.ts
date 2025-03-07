@@ -13,28 +13,29 @@ import { DashboardModule } from './dashboard/dashboard.module';
 import { CategoryModule } from './category/category.module';
 import { Category } from './category/category.entity';
 
-
 @Module({
   imports: [
-    ConfigModule.forRoot(),
+    ConfigModule.forRoot(), // Carrega as variáveis de ambiente
+
     TypeOrmModule.forRoot({
       type: 'mysql',
-      host: process.env.DB_HOST || 'localhost',
-      port: parseInt(process.env.DB_PORT || '3306', 10),
-      username: process.env.DB_USER || 'root',
-      password: process.env.DB_PASSWORD || 'root',
-      database: process.env.DB_NAME || 'turminha_chave',
+      url: process.env.DATABASE_URL || '', // Usa a variável DATABASE_URL, se disponível
+      host: process.env.DATABASE_URL ? undefined : process.env.DB_HOST || 'localhost',
+      port: process.env.DATABASE_URL ? undefined : parseInt(process.env.DB_PORT || '3306', 10),
+      username: process.env.DATABASE_URL ? undefined : process.env.DB_USER || 'root',
+      password: process.env.DATABASE_URL ? undefined : process.env.DB_PASSWORD || 'root',
+      database: process.env.DATABASE_URL ? undefined : process.env.DB_NAME || 'turminha_chave',
       entities: [User, Child, Employee, Finance, Category],
       autoLoadEntities: true,
-      synchronize: false, // 
+      synchronize: false, 
     }),
+
     UsersModule,
     ChildrenModule,
     EmployeesModule,
     FinanceModule,
     DashboardModule,
     CategoryModule,
-
   ],
 })
 export class AppModule {}
