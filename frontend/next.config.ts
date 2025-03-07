@@ -3,6 +3,7 @@ import { Configuration } from "webpack";
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  trailingSlash: true,
   webpack(config: Configuration) { 
     config.resolve = config.resolve || {};
     config.resolve.alias = {
