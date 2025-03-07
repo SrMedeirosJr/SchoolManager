@@ -15,11 +15,11 @@ import { Category } from './category/category.entity';
 
 @Module({
   imports: [
-    ConfigModule.forRoot(), // Carrega as variáveis de ambiente
+    ConfigModule.forRoot(), 
 
     TypeOrmModule.forRoot({
       type: 'mysql',
-      url: process.env.DATABASE_URL || '', // Usa a variável DATABASE_URL, se disponível
+      url: process.env.DATABASE_URL,
       host: process.env.DATABASE_URL ? undefined : process.env.DB_HOST || 'localhost',
       port: process.env.DATABASE_URL ? undefined : parseInt(process.env.DB_PORT || '3306', 10),
       username: process.env.DATABASE_URL ? undefined : process.env.DB_USER || 'root',

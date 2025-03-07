@@ -5,9 +5,10 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   app.enableCors({
-    origin: "http://localhost:3001", // Altere para a URL do seu frontend
-    methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
-    credentials: true, // Se precisar de cookies ou autenticação
+    origin: ['https://school-manager-sand.vercel.app'], // Permite requisições apenas do seu frontend na Vercel
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    allowedHeaders: 'Content-Type,Authorization',
+    credentials: true, // Se necessário para cookies/autenticação
   });
 
   await app.listen(3000);
