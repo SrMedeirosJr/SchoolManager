@@ -1,4 +1,12 @@
+import { useEffect } from "react";
+import { useRouter } from "next/router";
+
 export default function Home() {
-    return <h1>School Manager está rodando! 🎉</h1>;
-  }
-  
+  const router = useRouter();
+
+  useEffect(() => {
+    router.push("/login");
+  }, []);
+
+  return null; 
+}
