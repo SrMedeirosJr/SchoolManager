@@ -89,32 +89,30 @@ export default function CreateFinance() {
   const handleSubmit = async (e: any) => {
     e.preventDefault();
     setLoading(true);
-
+  
     try {
-      const { date, description, category, amount, paymentMethod, type, referenceId, employeeId, childId } = formData;
-
-      let requestData = {
+      const { date, description, category, amount, paymentMethod, type, referenceId } = formData;
+  
+      let requestData: any = {
         date,
         description,
         category,
         amount: parseFloat(amount),
         paymentMethod,
-        type,
-        employeeId: parseInt(referenceId, 10),
-        childId: parseInt(referenceId, 10)
+        type
       };
-
+  
       if (type === "Despesa" && referenceId) {
-        requestData = { ...requestData };
+        requestData.employeeId = parseInt(referenceId, 10);
       } else if (type === "Faturamento" && referenceId) {
-        requestData = { ...requestData };
+        requestData.childId = parseInt(referenceId, 10);
       }
-
+  
       const token = localStorage.getItem("token");
       await api.post("/finance", requestData, {
         headers: { Authorization: `Bearer ${token}` },
       });
-
+  
       router.push("/finance");
     } catch (error) {
       console.error("❌ Erro ao cadastrar transação:", error);
@@ -122,6 +120,7 @@ export default function CreateFinance() {
       setLoading(false);
     }
   };
+  
 
   return (
     <div className="p-6">

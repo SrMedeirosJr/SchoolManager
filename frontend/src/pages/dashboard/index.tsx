@@ -23,7 +23,7 @@ export default function Dashboard() {
     fullName: string;
     date: string;
     amount: number;
-    status: string;
+    Status: string;
   }
 
   
@@ -87,10 +87,13 @@ export default function Dashboard() {
           return;
         }
         // Transformar o objeto em um array de todas as crianças
-        const allChildren = Object.values(childrenResponse.data).flat();
+        const allChildren: Payment[] = Object.values(childrenResponse.data).flat() as Payment[];
+        console.log("📌 Dados das crianças processados:", allChildren);
 
 
-        //setChildrenPayments(allChildren);
+
+
+        setChildrenPayments(allChildren);
       } catch (error) {
         console.error("❌ Erro ao buscar dados do backend:", error);
         localStorage.removeItem("token");
@@ -222,12 +225,12 @@ export default function Dashboard() {
                 </tr>
               </thead>
               <tbody>
-                {childrenPayments.map(({ fullName, date, amount, status }, index) => (
+                {childrenPayments.map(({ fullName, date, amount, Status }, index) => (
                   <tr key={index} className={`transition-all ${darkMode ? "hover:bg-gray-700" : "border-t border-gray-200 hover:bg-gray-50 transition-all"}`}>
                     <td className="p-4 text-gray-700">{fullName}</td>
                     <td className="p-4 text-gray-700">{formatDate(date)}</td>
                     <td className="p-4 text-gray-700">{formatCurrency(amount)}</td>
-                    <td className={`p-3 ${status === "Pago" ? "text-green-500" : "text-red-500"}`}>{status}</td>
+                    <td className={`p-3 ${Status === "Pago" ? "text-green-500" : "text-red-500"}`}>{Status}</td>
                   </tr>
                 ))}
               </tbody>

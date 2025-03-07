@@ -3,8 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev -p 3001",
-    "build": "next build",
+    "dev": "set NEXT_PUBLIC_API_URL=http://localhost:3000 && next dev",
+    "build": "NEXT_PUBLIC_API_URL=https://schoolmanager-production-4cea.up.railway.app next build",
     "start": "next start -p 3001",
     "lint": "next lint"
   },
