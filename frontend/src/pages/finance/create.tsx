@@ -4,6 +4,19 @@ import api from "@/services/api";
 import { ArrowLeft } from "lucide-react";
 
 export default function CreateFinance() {
+
+  
+  interface Category {
+    id: number;
+    name: string;
+  }
+
+  interface reference {
+    id: number;
+    fullName: string;
+  }
+  
+
   const router = useRouter();
   const [loading, setLoading] = useState(false);
 
@@ -15,12 +28,14 @@ export default function CreateFinance() {
     paymentMethod: "",
     type: "",
     referenceId: "",
+    employeeId: "",
+    childId: ""
   });
 
   const [employees, setEmployees] = useState([]);
   const [children, setChildren] = useState([]);
-  const [referenceOptions, setReferenceOptions] = useState([]);
-  const [categories, setCategories] = useState([]);
+  const [referenceOptions, setReferenceOptions] = useState<reference[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -55,7 +70,7 @@ export default function CreateFinance() {
     fetchData();
   }, [router]);
 
-  const handleTypeChange = (type) => {
+  const handleTypeChange = (type: any) => {
     setFormData({ ...formData, type, referenceId: "" });
 
     if (type === "Despesa") {
@@ -67,16 +82,16 @@ export default function CreateFinance() {
     }
   };
 
-  const handleChange = (e) => {
+  const handleChange = (e: any) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: any) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      const { date, description, category, amount, paymentMethod, type, referenceId } = formData;
+      const { date, description, category, amount, paymentMethod, type, referenceId, employeeId, childId } = formData;
 
       let requestData = {
         date,
@@ -85,12 +100,14 @@ export default function CreateFinance() {
         amount: parseFloat(amount),
         paymentMethod,
         type,
+        employeeId: parseInt(referenceId, 10),
+        childId: parseInt(referenceId, 10)
       };
 
       if (type === "Despesa" && referenceId) {
-        requestData = { ...requestData, employeeId: parseInt(referenceId, 10) };
+        requestData = { ...requestData };
       } else if (type === "Faturamento" && referenceId) {
-        requestData = { ...requestData, childId: parseInt(referenceId, 10) };
+        requestData = { ...requestData };
       }
 
       const token = localStorage.getItem("token");

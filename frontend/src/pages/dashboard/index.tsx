@@ -3,22 +3,45 @@ import { useRouter } from "next/router";
 import { Moon, Sun } from "lucide-react";
 import api from "@/services/api";
 
+
 export default function Dashboard() {
+
+  interface User {
+    id: number;
+    name: string;
+    role: string;
+  }
+  
+  interface FinancialStats {
+    totalRevenue: number;
+    totalExpenses: number;
+    financialBalance: number;
+  }
+  
+  interface Payment {
+    id: number;
+    fullName: string;
+    date: string;
+    amount: number;
+    status: string;
+  }
+
+  
   const [darkMode, setDarkMode] = useState(false);
-  const [user, setUser] = useState(null);
-  const [financialData, setFinancialData] = useState(null);
-  const [childrenPayments, setChildrenPayments] = useState([]);
+  const [user, setUser] = useState<User | null>(null);
+  const [financialData, setFinancialData] = useState<FinancialStats | null>(null);
+  const [childrenPayments, setChildrenPayments] = useState<Payment[]>([]);
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
   const router = useRouter();
 
   // Função para formatar os valores corretamente como moeda brasileira
-  const formatCurrency = (value) =>
+  const formatCurrency = (value: number) =>
     new Intl.NumberFormat("pt-BR", {
       style: "currency",
       currency: "BRL",
     }).format(value);
 
-    const formatDate = (date) => {
+    const formatDate = (date: string) => {
       if (!date || date === "N/A") return "N/A";
       const d = new Date(date);
       return d.toLocaleDateString("pt-BR", {
@@ -67,7 +90,7 @@ export default function Dashboard() {
         const allChildren = Object.values(childrenResponse.data).flat();
 
 
-        setChildrenPayments(allChildren);
+        //setChildrenPayments(allChildren);
       } catch (error) {
         console.error("❌ Erro ao buscar dados do backend:", error);
         localStorage.removeItem("token");
@@ -199,12 +222,12 @@ export default function Dashboard() {
                 </tr>
               </thead>
               <tbody>
-                {childrenPayments.map(({ fullName, date, amount, Status }, index) => (
+                {childrenPayments.map(({ fullName, date, amount, status }, index) => (
                   <tr key={index} className={`transition-all ${darkMode ? "hover:bg-gray-700" : "border-t border-gray-200 hover:bg-gray-50 transition-all"}`}>
                     <td className="p-4 text-gray-700">{fullName}</td>
                     <td className="p-4 text-gray-700">{formatDate(date)}</td>
                     <td className="p-4 text-gray-700">{formatCurrency(amount)}</td>
-                    <td className={`p-3 ${Status === "Pago" ? "text-green-500" : "text-red-500"}`}>{Status}</td>
+                    <td className={`p-3 ${status === "Pago" ? "text-green-500" : "text-red-500"}`}>{status}</td>
                   </tr>
                 ))}
               </tbody>

@@ -4,13 +4,28 @@ import { Pencil, Trash2, ArrowLeft, Plus } from "lucide-react";
 import api from "@/services/api";
 
 export default function Employees() {
-  const [employees, setEmployees] = useState([]);
+
+  interface Employee {
+    id: number;
+    fullName: string;
+  }
+
+  interface Employees {
+    id: number;
+    fullName: string;
+    position: string;
+    salary: number;
+    status: string;
+  }
+ 
+
+  const [employees, setEmployees] = useState<Employees[]>([]);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [employeeToDelete, setEmployeeToDelete] = useState(null);
+  const [employeeToDelete, setEmployeeToDelete] = useState<Employee | null>(null);
   const router = useRouter();
 
   // Função para formatar valores monetários
-  const formatCurrency = (value) =>
+  const formatCurrency = (value: number) =>
     new Intl.NumberFormat("pt-BR", {
       style: "currency",
       currency: "BRL",
@@ -61,11 +76,11 @@ useEffect(() => {
             return;
           }
     
-          await api.delete(`/employees/${employeeToDelete.id}`, {
+          await api.delete(`/employees/${employeeToDelete?.id}`, {
             headers: { Authorization: `Bearer ${token}` }, // Adiciona o token na requisição de exclusão
           });
-      setEmployees(employees.filter((emp) => emp.id !== employeeToDelete.id));
-      setEmployeeToDelete(null); // Fechar modal
+      setEmployees(employees.filter((emp) => emp.id !== employeeToDelete?.id));
+      setEmployeeToDelete(null); 
     } catch (error) {
       console.error("Erro ao excluir funcionário:", error);
     }
@@ -137,7 +152,7 @@ useEffect(() => {
               ))
             ) : (
               <tr>
-                <td colSpan="5" className="text-center p-3">Nenhum funcionário encontrado.</td>
+                <td colSpan={5} className="text-center p-3">Nenhum funcionário encontrado.</td>
               </tr>
             )}
           </tbody>

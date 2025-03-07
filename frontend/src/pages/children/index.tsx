@@ -4,19 +4,36 @@ import api from "@/services/api";
 import { ArrowLeft, Plus } from "lucide-react";
 
 export default function ChildrenList() {
+  
+  interface Child {
+    id: number;
+    fullName: string;
+    birthDate: Date;       
+    enrollmentDate: Date;  
+    schedule: string;
+    turma: string;
+    feeAmount: number;     
+    dueDate: Date;         
+    fatherName: string;
+    fatherPhone: string;
+    motherName: string;
+    motherPhone: string;
+}
+  
   const [children, setChildren] = useState([]);
-  const [selectedChild, setSelectedChild] = useState(null);
   const router = useRouter();
+  const [selectedChild, setSelectedChild] = useState<Child | null>(null);
+  
 
   // Função para formatar valores monetários
-  const formatCurrency = (value) =>
+  const formatCurrency = (value: number) =>
     new Intl.NumberFormat("pt-BR", {
       style: "currency",
       currency: "BRL",
     }).format(value);
 
   // Função para formatar datas no padrão DD/MM/AAAA
-  const formatDate = (dateString) => {
+  const formatDate = (dateString: string | Date) => {
     if (!dateString) return "-";
     return new Date(dateString).toLocaleDateString("pt-BR");
   };
@@ -37,11 +54,11 @@ export default function ChildrenList() {
 
         setChildren(response.data);
       } catch (error) {
-        console.error("Erro ao buscar crianças:", error);
-        if (error.response?.status === 401) {
-          router.push("/login");
+        if (error instanceof Error) {
+          console.error("Erro ao buscar crianças:", error.message);
         }
       }
+      
     };
 
     fetchChildren();
@@ -144,7 +161,7 @@ export default function ChildrenList() {
               )
             ) : (
               <tr>
-                <td colSpan="12" className="text-center p-3">
+                <td colSpan={12} className="text-center p-3">
                   Nenhuma criança encontrada.
                 </td>
               </tr>
@@ -174,7 +191,7 @@ export default function ChildrenList() {
               <strong>Mensalidade:</strong> {formatCurrency(selectedChild.feeAmount)}
             </p>
             <p>
-              <strong>Dia de Vencimento:</strong> {selectedChild.dueDate}
+            <strong>Dia de Vencimento:</strong> {selectedChild.dueDate.toLocaleDateString("pt-BR")}
             </p>
             <p>
               <strong>Nome do Pai:</strong>{" "}

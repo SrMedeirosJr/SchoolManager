@@ -2,22 +2,34 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import api from "@/services/api";
 import { ArrowLeft, Plus } from "lucide-react";
+import axios from "axios";
 
 export default function FinanceList() {
+   interface Child {
+    id: number;
+    fullName: string;
+    }
+
+    interface Employee {
+      id: number;
+      fullName: string;
+      }
+  
+
   const [financeData, setFinanceData] = useState([]);
   const [employees, setEmployees] = useState({});
   const [children, setChildren] = useState({});
   const router = useRouter();
 
   // Formatar valores monetários
-  const formatCurrency = (value) =>
+  const formatCurrency = (value: number) =>
     new Intl.NumberFormat("pt-BR", {
       style: "currency",
       currency: "BRL",
     }).format(value);
 
   // Formatar datas para o padrão DD/MM/AAAA
-  const formatDate = (dateString) => {
+  const formatDate = (dateString: string) => {
     if (!dateString) return "-";
     return new Date(dateString).toLocaleDateString("pt-BR");
   };
@@ -49,24 +61,31 @@ export default function FinanceList() {
         });
 
         // Criar dicionários para facilitar a busca pelo nome
-        const employeeMap = {};
-        employeesResponse.data.forEach((emp) => {
-          employeeMap[emp.id] = emp.fullName;
+        const employeeMap: Record<number, string> = {}; // Definir como um objeto indexado pelo ID do funcionário
+        employeesResponse.data.forEach((emp: Employee) => {
+        employeeMap[emp.id] = emp.fullName;
         });
 
-        const childrenMap = {};
-        childrenResponse.data.forEach((child) => {
-          childrenMap[child.id] = child.fullName;
+        const childrenMap: Record<number, string> = {}; // Definir como um objeto indexado pelo ID da criança
+        childrenResponse.data.forEach((child: Child) => {
+        childrenMap[child.id] = child.fullName;
         });
 
         setEmployees(employeeMap);
         setChildren(childrenMap);
-      } catch (error) {
-        console.error("Erro ao buscar dados financeiros:", error);
-        if (error.response?.status === 401) {
-          router.push("/login");
+        
+      } catch (error: unknown) {
+        console.error("Erro ao buscar funcionários:", error);
+      
+        if (axios.isAxiosError(error)) {
+          if (error.response?.status === 401) {
+            router.push("/login");
+          }
+        } else {
+          console.error("Erro inesperado:", error);
         }
       }
+      
     };
 
     fetchFinanceData();
@@ -129,7 +148,7 @@ export default function FinanceList() {
               ))
             ) : (
               <tr>
-                <td colSpan="7" className="text-center p-3">Nenhuma transação encontrada.</td>
+                <td colSpan={7} className="text-center p-3">Nenhuma transação encontrada.</td>
               </tr>
             )}
           </tbody>

@@ -19,13 +19,13 @@ export default function CreateEmployee() {
   const router = useRouter();
 
   // Função para lidar com alterações nos campos
-  const handleChange = (e) => {
+  const handleChange = (e: any) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
 
   // Função para cadastrar o funcionário
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: any) => {
     e.preventDefault();
     setError("");
     setSuccess(false);
