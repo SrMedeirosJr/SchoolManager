@@ -28,10 +28,14 @@ export class DashboardController {
   return this.dashboardService.getRecordsByMonth(monthNumber);
 }
 
-  @Get('children-payments')
-  async getChildrenPaymentStatus() {
-    return this.dashboardService.getChildrenPaymentStatus();
-  }
+@Get('children-payments')
+async getChildrenPaymentStatus(@Query('month') month: string) {
+    const monthNumber = parseInt(month, 10);
+    if (isNaN(monthNumber) || monthNumber < 1 || monthNumber > 12) {
+        return { error: "Mês inválido. Use um valor entre 1 e 12." };
+    }
+    return this.dashboardService.getChildrenPaymentStatus(monthNumber);
+}
 
 
   @Get('average-tuition')
