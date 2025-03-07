@@ -20,6 +20,7 @@
     "react-hook-form": "^7.54.2",
     "react-input-mask": "^2.0.4",
     "react-input-mask-next": "^3.0.0-alpha.12",
+    "webpack": "^5.98.0",
     "zod": "^3.24.2"
   },
   "devDependencies": {
