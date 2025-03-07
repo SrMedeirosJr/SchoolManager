@@ -101,28 +101,28 @@ export default function FinanceList() {
         <table className="w-full border-collapse">
           <thead>
             <tr className="bg-gray-200">
-              <th className="p-3 text-left">Data</th>
-              <th className="p-3 text-left">Descrição</th>
-              <th className="p-3 text-left">Categoria</th>
-              <th className="p-3 text-left">Valor</th>
-              <th className="p-3 text-left">Forma de Pagamento</th>
-              <th className="p-3 text-left">Tipo</th>
-              <th className="p-3 text-left">Referência</th>
+              <th className="p-4 text-left font-semibold">Data</th>
+              <th className="p-4 text-left font-semibold">Descrição</th>
+              <th className="p-4 text-left font-semibold">Categoria</th>
+              <th className="p-4 text-left font-semibold">Valor</th>
+              <th className="p-4 text-left font-semibold">Forma de Pagamento</th>
+              <th className="p-4 text-left font-semibold">Tipo</th>
+              <th className="p-4 text-left font-semibold">Referência</th>
             </tr>
           </thead>
           <tbody>
             {financeData.length > 0 ? (
               financeData.map(({ id, date, description, category, amount, paymentMethod, type, employeeId, childId }) => (
-                <tr key={id} className="transition-all hover:bg-gray-100">
-                  <td className="p-3">{formatDate(date)}</td>
-                  <td className="p-3">{description}</td>
-                  <td className="p-3">{category}</td>
-                  <td className="p-3">{formatCurrency(amount)}</td>
-                  <td className="p-3">{paymentMethod}</td>
-                  <td className={`p-3 ${type === "Faturamento" ? "text-green-500" : "text-red-500"}`}>
+                <tr key={id} className="border-t border-gray-200 transition-all hover:bg-gray-100">
+                  <td className="p-4 text-gray-700">{formatDate(date)}</td>
+                  <td className="p-4 text-gray-700">{description}</td>
+                  <td className="p-4 text-gray-700">{category}</td>
+                  <td className="p-4 text-gray-700">{formatCurrency(amount)}</td>
+                  <td className="p-4 text-gray-700">{paymentMethod}</td>
+                  <td className={`p-4 ${type === "Faturamento" ? "text-green-500" : "text-red-500"}`}>
                     {type}
                   </td>
-                  <td className="p-3">
+                  <td className="p-4">
                     {employeeId ? employees[employeeId] : childId ? children[childId] : "Outro"}
                   </td>
                 </tr>

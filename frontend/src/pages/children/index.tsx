@@ -76,18 +76,18 @@ export default function ChildrenList() {
         <table className="w-full border-collapse">
           <thead>
             <tr className="bg-gray-200">
-              <th className="p-3 text-left">Id</th>
-              <th className="p-3 text-left">Nome</th>
-              <th className="p-3 text-left">Data de Nascimento</th>
-              <th className="p-3 text-left">Data de Matrícula</th>
-              <th className="p-3 text-left">Horário</th>
-              <th className="p-3 text-left">Turma</th>
-              <th className="p-3 text-left">Mensalidade</th>
-              <th className="p-3 text-left">Dia de Vencimento</th>
-              <th className="p-3 text-left">Nome do Pai</th>
-              <th className="p-3 text-left">Telefone Pai</th>
-              <th className="p-3 text-left">Nome da Mãe</th>
-              <th className="p-3 text-left">Telefone Mãe</th>
+              <th className="p-4 text-left font-semibold">Id</th>
+              <th className="p-4 text-left font-semibold">Nome</th>
+              <th className="p-4 text-left font-semibold">Data de Nascimento</th>
+              <th className="p-4 text-left font-semibold">Data de Matrícula</th>
+              <th className="p-4 text-left font-semibold">Horário</th>
+              <th className="p-4 text-left font-semibold">Turma</th>
+              <th className="p-4 text-left font-semibold">Mensalidade</th>
+              <th className="p-4 text-left font-semibold">Dia de Vencimento</th>
+              <th className="p-4 text-left font-semibold">Nome do Pai</th>
+              <th className="p-4 text-left font-semibold">Telefone Pai</th>
+              <th className="p-4 text-left font-semibold">Nome da Mãe</th>
+              <th className="p-4 text-left font-semibold">Telefone Mãe</th>
             </tr>
           </thead>
           <tbody>
@@ -109,7 +109,7 @@ export default function ChildrenList() {
                 }) => (
                   <tr
                     key={id}
-                    className="transition-all hover:bg-gray-100 cursor-pointer"
+                    className="border-t border-gray-200 transition-all hover:bg-gray-100 cursor-pointer"
                     onClick={() =>
                       setSelectedChild({
                         id,
@@ -127,18 +127,18 @@ export default function ChildrenList() {
                       })
                     }
                   >
-                    <td className="p-3">{id}</td>
-                    <td className="p-3">{fullName}</td>
-                    <td className="p-3">{formatDate(birthDate)}</td>
-                    <td className="p-3">{formatDate(enrollmentDate)}</td>
-                    <td className="p-3">{schedule}</td>
-                    <td className="p-3">{turma}</td>
-                    <td className="p-3">{formatCurrency(feeAmount)}</td>
-                    <td className="p-3">{dueDate}</td>
-                    <td className="p-3">{fatherName !== "-" ? fatherName : "Não informado"}</td>
-                    <td className="p-3">{fatherPhone !== "-" ? fatherPhone : "Não informado"}</td>
-                    <td className="p-3">{motherName !== "-" ? motherName : "Não informado"}</td>
-                    <td className="p-3">{motherPhone !== "-" ? motherPhone : "Não informado"}</td>
+                    <td className="p-4 text-gray-700">{id}</td>
+                    <td className="p-4 text-gray-700">{fullName}</td>
+                    <td className="p-4 text-gray-700">{formatDate(birthDate)}</td>
+                    <td className="p-4 text-gray-700">{formatDate(enrollmentDate)}</td>
+                    <td className="p-4 text-gray-700">{schedule}</td>
+                    <td className="p-4 text-gray-700">{turma}</td>
+                    <td className="p-4 text-gray-700">{formatCurrency(feeAmount)}</td>
+                    <td className="p-4 text-gray-700">{dueDate}</td>
+                    <td className="p-4 text-gray-700">{fatherName !== "-" ? fatherName : "Não informado"}</td>
+                    <td className="p-4 text-gray-700">{fatherPhone !== "-" ? fatherPhone : "Não informado"}</td>
+                    <td className="p-4 text-gray-700">{motherName !== "-" ? motherName : "Não informado"}</td>
+                    <td className="p-4 text-gray-700">{motherPhone !== "-" ? motherPhone : "Não informado"}</td>
                   </tr>
                 )
               )

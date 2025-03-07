@@ -20,7 +20,17 @@ export default function Employees() {
 useEffect(() => {
     const fetchEmployees = async () => {
       try {
-        const response = await api.get("/employees");
+        const token = localStorage.getItem("token"); // Obtém o token do usuário
+      
+              if (!token) {
+                console.error("Token não encontrado. Usuário precisa fazer login.");
+                router.push("/login");
+                return;
+              }
+      
+              const response = await api.get("/employees", {
+                headers: { Authorization: `Bearer ${token}` }, // Adiciona o token no cabeçalho
+              });
         setEmployees(response.data);
       } catch (error) {
         console.error("Erro ao buscar funcionários:", error);
@@ -34,7 +44,6 @@ useEffect(() => {
   
     // Simulação de checagem de permissão de administrador
     const userRole = localStorage.getItem("userRole");
-    console.log("UserRole encontrado:", userRole);
     if (userRole) {
       setIsAdmin(userRole === "admin");
     }
@@ -44,7 +53,17 @@ useEffect(() => {
   // Função para excluir funcionário
   const handleDelete = async () => {
     try {
-      await api.delete(`/employees/${employeeToDelete.id}`);
+      const token = localStorage.getItem("token"); // Obtém o token do usuário
+    
+          if (!token) {
+            console.error("Token não encontrado. Usuário precisa fazer login.");
+            router.push("/login");
+            return;
+          }
+    
+          await api.delete(`/employees/${employeeToDelete.id}`, {
+            headers: { Authorization: `Bearer ${token}` }, // Adiciona o token na requisição de exclusão
+          });
       setEmployees(employees.filter((emp) => emp.id !== employeeToDelete.id));
       setEmployeeToDelete(null); // Fechar modal
     } catch (error) {
@@ -83,23 +102,23 @@ useEffect(() => {
         <table className="w-full border-collapse">
           <thead>
             <tr className="bg-gray-200">
-              <th className="p-3 text-left">Nome</th>
-              <th className="p-3 text-left">Cargo</th>
-              <th className="p-3 text-left">Salário</th>
-              <th className="p-3 text-left">Status</th>
+              <th className="p-4 text-left font-semibold">Nome</th>
+              <th className="p-4 text-left font-semibold">Cargo</th>
+              <th className="p-4 text-left font-semibold">Salário</th>
+              <th className="p-4 text-left font-semibold">Status</th>
               {isAdmin && <th className="p-3 text-left">Ações</th>}
             </tr>
           </thead>
           <tbody>
             {employees.length > 0 ? (
               employees.map(({ id, fullName, position, salary, status }) => (
-                <tr key={id} className="transition-all hover:bg-gray-100">
-                  <td className="p-3">{fullName}</td>
-                  <td className="p-3">{position}</td>
-                  <td className="p-3">{formatCurrency(salary)}</td>
-                  <td className={`p-3 ${status === "Ativo" ? "text-green-500" : "text-red-500"}`}>{status}</td>
+                <tr key={id} className="border-t border-gray-200 transition-all hover:bg-gray-100">
+                  <td className="p-4 text-gray-700">{fullName}</td>
+                  <td className="p-4 text-gray-700">{position}</td>
+                  <td className="p-4 text-gray-700">{formatCurrency(salary)}</td>
+                  <td className={`p-4 ${status === "Ativo" ? "text-green-500" : "text-red-500"}`}>{status}</td>
                   {isAdmin && (
-                    <td className="p-3 flex gap-2">
+                    <td className="p-4 flex gap-2">
                       <button
                         onClick={() => router.push(`/employees/edit/${id}`)}
                         className="p-1 bg-blue-500 text-white rounded hover:bg-blue-600 transition-all"

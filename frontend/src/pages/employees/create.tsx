@@ -1,51 +1,64 @@
 import { useState } from "react";
-import { useForm, Controller } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
 import { useRouter } from "next/router";
-import { ArrowLeft } from "lucide-react";
 import api from "@/services/api";
-import InputMask from "react-input-mask-next"; // 🚀 Substituído para evitar erro no React 18
-
-// Esquema de validação
-const employeeSchema = z.object({
-  fullName: z.string().min(3, "Nome deve ter no mínimo 3 caracteres"),
-  birthDate: z.string().min(10, "Data inválida"),
-  position: z.string().min(3, "Cargo obrigatório"),
-  salary: z.string().min(1, "Salário obrigatório"),
-  hiringDate: z.string().min(10, "Data de contratação inválida"),
-  phoneNumber: z.string().min(14, "Telefone inválido"),
-  status: z.enum(["Ativo", "Inativo"]),
-});
+import { ArrowLeft } from "lucide-react";
 
 export default function CreateEmployee() {
-  const router = useRouter();
-  const [loading, setLoading] = useState(false);
-
-  const {
-    control,
-    register,
-    handleSubmit,
-    setValue,
-    formState: { errors },
-  } = useForm({
-    resolver: zodResolver(employeeSchema),
+  const [formData, setFormData] = useState({
+    fullName: "",
+    birthDate: "",
+    position: "",
+    salary: "",
+    hiringDate: "",
+    phoneNumber: "",
+    email: "",
   });
 
-  // Função de envio do formulário
-  const onSubmit = async (data) => {
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState(false);
+  const router = useRouter();
+
+  // Função para lidar com alterações nos campos
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+  };
+
+  // Função para cadastrar o funcionário
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
+    setSuccess(false);
+
+    // Validação simples
+    if (!formData.fullName || !formData.birthDate || !formData.position || !formData.salary || !formData.hiringDate) {
+      setError("Por favor, preencha todos os campos obrigatórios.");
+      return;
+    }
+
     try {
-      setLoading(true);
-      const formattedData = {
-        ...data,
-        salary: parseFloat(data.salary.replace("R$", "").replace(".", "").replace(",", ".")),
+      const token = localStorage.getItem("token");
+      if (!token) {
+        setError("Usuário não autenticado.");
+        router.push("/login");
+        return;
+      }
+
+      // Convertendo salário para número
+      const payload = {
+        ...formData,
+        salary: parseFloat(formData.salary),
       };
-      await api.post("/employees", formattedData);
-      router.push("/employees");
-    } catch (error) {
-      console.error("Erro ao criar funcionário:", error);
-    } finally {
-      setLoading(false);
+
+      await api.post("/employees", payload, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      setSuccess(true);
+      setTimeout(() => router.push("/employees"), 2000); // Redireciona após sucesso
+    } catch (err) {
+      setError("Erro ao cadastrar funcionário. Tente novamente.");
+      console.error("Erro no cadastro:", err);
     }
   };
 
@@ -53,139 +66,119 @@ export default function CreateEmployee() {
     <div className="p-6">
       {/* Cabeçalho */}
       <div className="flex justify-between items-center mb-6">
-        <button
-          onClick={() => router.push("/employees")}
-          className="p-2 bg-gray-300 text-black rounded hover:bg-gray-400 transition-all flex items-center"
-        >
-          <ArrowLeft size={16} className="mr-2" />
-          Voltar
-        </button>
-        <h1 className="text-2xl font-bold">Novo Funcionário</h1>
+        <div className="flex items-center gap-4">
+          <button
+            onClick={() => router.push("/employees")}
+            className="p-2 bg-gray-300 text-black rounded hover:bg-gray-400 transition-all flex items-center"
+          >
+            <ArrowLeft size={16} className="mr-2" />
+            Voltar
+          </button>
+          <h1 className="text-2xl font-bold">Novo Funcionário</h1>
+        </div>
       </div>
 
       {/* Formulário */}
-      <form onSubmit={handleSubmit(onSubmit)} className="bg-white p-6 rounded-lg shadow-md">
-        <div className="grid grid-cols-2 gap-4">
-          {/* Nome Completo */}
+      <div className="bg-white p-6 rounded-lg shadow-md">
+        {error && <p className="text-red-500 mb-4">{error}</p>}
+        {success && <p className="text-green-500 mb-4">Funcionário cadastrado com sucesso!</p>}
+
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-gray-700 font-medium">Nome Completo</label>
+            <label className="block text-gray-700">Nome Completo *</label>
             <input
-              {...register("fullName")}
-              className="w-full p-2 border rounded"
-              placeholder="Digite o nome"
+              type="text"
+              name="fullName"
+              value={formData.fullName}
+              onChange={handleChange}
+              required
+              className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none"
+              placeholder="Digite o nome completo"
             />
-            {errors.fullName && <p className="text-red-500 text-sm">{errors.fullName.message}</p>}
           </div>
 
-          {/* Cargo */}
           <div>
-            <label className="block text-gray-700 font-medium">Cargo</label>
+            <label className="block text-gray-700">Data de Nascimento *</label>
             <input
-              {...register("position")}
-              className="w-full p-2 border rounded"
-              placeholder="Ex: Professor, Diretor..."
-            />
-            {errors.position && <p className="text-red-500 text-sm">{errors.position.message}</p>}
-          </div>
-
-          {/* Data de Nascimento */}
-          <div>
-            <label className="block text-gray-700 font-medium">Data de Nascimento</label>
-            <Controller
+              type="date"
               name="birthDate"
-              control={control}
-              render={({ field }) => (
-                <InputMask
-                  {...field}
-                  mask="99/99/9999"
-                  className="w-full p-2 border rounded"
-                  placeholder="DD/MM/AAAA"
-                />
-              )}
+              value={formData.birthDate}
+              onChange={handleChange}
+              required
+              className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none"
             />
-            {errors.birthDate && <p className="text-red-500 text-sm">{errors.birthDate.message}</p>}
           </div>
 
-          {/* Data de Contratação */}
           <div>
-            <label className="block text-gray-700 font-medium">Data de Contratação</label>
-            <Controller
-              name="hiringDate"
-              control={control}
-              render={({ field }) => (
-                <InputMask
-                  {...field}
-                  mask="99/99/9999"
-                  className="w-full p-2 border rounded"
-                  placeholder="DD/MM/AAAA"
-                />
-              )}
+            <label className="block text-gray-700">Cargo *</label>
+            <input
+              type="text"
+              name="position"
+              value={formData.position}
+              onChange={handleChange}
+              required
+              className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none"
+              placeholder="Digite o cargo"
             />
-            {errors.hiringDate && <p className="text-red-500 text-sm">{errors.hiringDate.message}</p>}
           </div>
 
-          {/* Telefone */}
           <div>
-            <label className="block text-gray-700 font-medium">Telefone</label>
-            <Controller
-              name="phoneNumber"
-              control={control}
-              render={({ field }) => (
-                <InputMask
-                  {...field}
-                  mask="(99) 99999-9999"
-                  className="w-full p-2 border rounded"
-                  placeholder="(XX) XXXXX-XXXX"
-                />
-              )}
-            />
-            {errors.phoneNumber && <p className="text-red-500 text-sm">{errors.phoneNumber.message}</p>}
-          </div>
-
-          {/* Salário */}
-          <div>
-            <label className="block text-gray-700 font-medium">Salário</label>
-            <Controller
+            <label className="block text-gray-700">Salário *</label>
+            <input
+              type="number"
               name="salary"
-              control={control}
-              render={({ field }) => (
-                <InputMask
-                  {...field}
-                  mask="R$ 9.999,99"
-                  className="w-full p-2 border rounded"
-                  placeholder="R$ 0,00"
-                  onBlur={(e) => {
-                    let value = e.target.value.replace(/\D/g, "");
-                    value = (parseInt(value, 10) / 100).toFixed(2).replace(".", ",");
-                    setValue("salary", `R$ ${value}`);
-                  }}
-                />
-              )}
+              value={formData.salary}
+              onChange={handleChange}
+              required
+              className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none"
+              placeholder="Digite o salário"
             />
-            {errors.salary && <p className="text-red-500 text-sm">{errors.salary.message}</p>}
           </div>
 
-          {/* Status */}
           <div>
-            <label className="block text-gray-700 font-medium">Status</label>
-            <select {...register("status")} className="w-full p-2 border rounded">
-              <option value="Ativo">Ativo</option>
-              <option value="Inativo">Inativo</option>
-            </select>
+            <label className="block text-gray-700">Data de Contratação *</label>
+            <input
+              type="date"
+              name="hiringDate"
+              value={formData.hiringDate}
+              onChange={handleChange}
+              required
+              className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none"
+            />
           </div>
-        </div>
 
-        {/* Botão de envio */}
-        <div className="mt-6 flex justify-end">
+          <div>
+            <label className="block text-gray-700">Telefone</label>
+            <input
+              type="text"
+              name="phoneNumber"
+              value={formData.phoneNumber}
+              onChange={handleChange}
+              className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none"
+              placeholder="Opcional"
+            />
+          </div>
+
+          <div>
+            <label className="block text-gray-700">E-mail</label>
+            <input
+              type="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none"
+              placeholder="Opcional"
+            />
+          </div>
+
           <button
             type="submit"
-            className="p-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-all"
-            disabled={loading}
+            className="w-full bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none"
           >
-            {loading ? "Salvando..." : "Cadastrar"}
+            Cadastrar Funcionário
           </button>
-        </div>
-      </form>
+        </form>
+      </div>
     </div>
   );
 }

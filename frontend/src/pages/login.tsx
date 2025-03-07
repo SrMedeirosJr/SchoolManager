@@ -16,10 +16,17 @@ export default function Login() {
     setError("");
 
     try {
-      const response = await api.post("/users/login", { username, password });
+      const response = await api.post("/users/login", { name: username, password });
 
       if (response.data.access_token) {
-        localStorage.setItem("token", response.data.access_token);
+        const { access_token } = response.data;
+        localStorage.setItem("token", access_token);
+
+        // Decodifica o token JWT para obter os dados do usuário
+        const userPayload = JSON.parse(atob(access_token.split(".")[1]));
+
+        // Armazena as informações do usuário no localStorage
+        localStorage.setItem("user", JSON.stringify(userPayload));
 
         if (rememberMe) {
           localStorage.setItem("rememberMe", "true");

@@ -20,24 +20,10 @@ export default function CreateFinance() {
   const [employees, setEmployees] = useState([]);
   const [children, setChildren] = useState([]);
   const [referenceOptions, setReferenceOptions] = useState([]);
-
-  const categories = [
-    "VT/VA",
-    "Criança",
-    "Salario",
-    "Deposito",
-    "Avulso",
-    "Diaria Criança",
-    "Judo",
-    "Luz",
-    "Internet",
-    "Matricula",
-    "Festa",
-    "Comida",
-  ];
+  const [categories, setCategories] = useState([]);
 
   useEffect(() => {
-    const fetchReferences = async () => {
+    const fetchData = async () => {
       try {
         const token = localStorage.getItem("token");
         if (!token) {
@@ -45,6 +31,10 @@ export default function CreateFinance() {
           router.push("/login");
           return;
         }
+
+        const categoriesResponse = await api.get("/category", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
 
         const employeesResponse = await api.get("/employees", {
           headers: { Authorization: `Bearer ${token}` },
@@ -54,14 +44,15 @@ export default function CreateFinance() {
           headers: { Authorization: `Bearer ${token}` },
         });
 
+        setCategories(categoriesResponse.data);
         setEmployees(employeesResponse.data);
         setChildren(childrenResponse.data);
       } catch (error) {
-        console.error("Erro ao buscar funcionários e crianças:", error);
+        console.error("Erro ao buscar dados:", error);
       }
     };
 
-    fetchReferences();
+    fetchData();
   }, [router]);
 
   const handleTypeChange = (type) => {
@@ -96,19 +87,11 @@ export default function CreateFinance() {
         type,
       };
 
-      // 🔹 **Log dos valores antes de enviar a requisição**
-      console.log("🔹 Tipo da transação:", type);
-      console.log("🔹 ID de referência selecionado:", referenceId);
-
       if (type === "Despesa" && referenceId) {
         requestData = { ...requestData, employeeId: parseInt(referenceId, 10) };
-        console.log("✅ Adicionando employeeId:", requestData.employeeId);
       } else if (type === "Faturamento" && referenceId) {
         requestData = { ...requestData, childId: parseInt(referenceId, 10) };
-        console.log("✅ Adicionando childId:", requestData.childId);
       }
-
-      console.log("📤 Enviando dados para API:", requestData);
 
       const token = localStorage.getItem("token");
       await api.post("/finance", requestData, {
@@ -144,79 +127,48 @@ export default function CreateFinance() {
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="block text-gray-700 font-medium">Data</label>
-            <input
-              type="date"
-              name="date"
-              value={formData.date}
-              onChange={handleChange}
-              className="w-full p-2 border rounded"
-              required
-            />
+            <input type="date" name="date" value={formData.date} onChange={handleChange} className="w-full p-2 border rounded" required />
           </div>
 
           <div>
             <label className="block text-gray-700 font-medium">Descrição</label>
-            <input
-              type="text"
-              name="description"
-              value={formData.description}
-              onChange={handleChange}
-              className="w-full p-2 border rounded"
-              required
-            />
+            <input type="text" name="description" value={formData.description} onChange={handleChange} className="w-full p-2 border rounded" required />
           </div>
 
           <div>
             <label className="block text-gray-700 font-medium">Categoria</label>
-            <select
-              name="category"
-              value={formData.category}
-              onChange={handleChange}
-              className="w-full p-2 border rounded"
-              required
-            >
-              <option value="">Selecione...</option>
-              {categories.map((cat, index) => (
-                <option key={index} value={cat}>
-                  {cat}
-                </option>
-              ))}
-            </select>
+            <div className="flex items-center gap-2">
+              <select name="category" value={formData.category} onChange={handleChange} className="w-full p-2 border rounded" required>
+                <option value="">Selecione...</option>
+                {categories.map((cat) => (
+                  <option key={cat.id} value={cat.id}>
+                    {cat.name}
+                  </option>
+                ))}
+              </select>
+              <button
+                type="button"
+                onClick={() => router.push("/categories/create")}
+                className="p-2 bg-green-500 text-white rounded hover:bg-green-600 transition-all"
+              >
+                +
+              </button>
+            </div>
           </div>
 
           <div>
             <label className="block text-gray-700 font-medium">Valor</label>
-            <input
-              type="number"
-              name="amount"
-              value={formData.amount}
-              onChange={handleChange}
-              className="w-full p-2 border rounded"
-              required
-            />
+            <input type="number" name="amount" value={formData.amount} onChange={handleChange} className="w-full p-2 border rounded" required />
           </div>
 
           <div>
             <label className="block text-gray-700 font-medium">Forma de Pagamento</label>
-            <input
-              type="text"
-              name="paymentMethod"
-              value={formData.paymentMethod}
-              onChange={handleChange}
-              className="w-full p-2 border rounded"
-              required
-            />
+            <input type="text" name="paymentMethod" value={formData.paymentMethod} onChange={handleChange} className="w-full p-2 border rounded" required />
           </div>
 
           <div>
             <label className="block text-gray-700 font-medium">Tipo</label>
-            <select
-              name="type"
-              value={formData.type}
-              onChange={(e) => handleTypeChange(e.target.value)}
-              className="w-full p-2 border rounded"
-              required
-            >
+            <select name="type" value={formData.type} onChange={(e) => handleTypeChange(e.target.value)} className="w-full p-2 border rounded" required>
               <option value="">Selecione...</option>
               <option value="Despesa">Despesa</option>
               <option value="Faturamento">Faturamento</option>
@@ -226,12 +178,7 @@ export default function CreateFinance() {
           {referenceOptions.length > 0 && (
             <div>
               <label className="block text-gray-700 font-medium">Referência</label>
-              <select
-                name="referenceId"
-                value={formData.referenceId}
-                onChange={handleChange}
-                className="w-full p-2 border rounded"
-              >
+              <select name="referenceId" value={formData.referenceId} onChange={handleChange} className="w-full p-2 border rounded">
                 <option value="">Nenhuma</option>
                 {referenceOptions.map((ref) => (
                   <option key={ref.id} value={ref.id}>
@@ -244,11 +191,7 @@ export default function CreateFinance() {
         </div>
 
         <div className="mt-6 flex justify-end">
-          <button
-            type="submit"
-            className="p-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-all"
-            disabled={loading}
-          >
+          <button type="submit" className="p-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-all" disabled={loading}>
             {loading ? "Salvando..." : "Cadastrar"}
           </button>
         </div>

@@ -8,26 +8,22 @@ export default function Dashboard() {
   const [user, setUser] = useState(null);
   const [financialData, setFinancialData] = useState(null);
   const [childrenPayments, setChildrenPayments] = useState([]);
-  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
+  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1); // Mês atual
   const router = useRouter();
 
-  // Função para formatar os valores corretamente como moeda brasileira
+  // Função para formatar valores monetários
   const formatCurrency = (value) =>
     new Intl.NumberFormat("pt-BR", {
       style: "currency",
       currency: "BRL",
     }).format(value);
 
-    const formatDate = (date) => {
-      if (!date || date === "N/A") return "N/A";
-      const d = new Date(date);
-      return d.toLocaleDateString("pt-BR", {
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric",
-        timeZone: "UTC",
-      });
-    };  
+  // Formatar data para DD/MM/AAAA
+  const formatDate = (date) => {
+    if (!date || date === "N/A") return "—";
+    const [year, month, day] = date.split("-");
+    return `${day}/${month}/${year}`;
+  };
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -39,6 +35,8 @@ export default function Dashboard() {
 
     const fetchData = async () => {
       try {
+        console.log(`🔄 Buscando dados para o mês: ${selectedMonth}`);
+        
         // Buscar informações do usuário
         const userResponse = await api.get("/users/profile", {
           headers: { Authorization: `Bearer ${token}` },
@@ -47,25 +45,31 @@ export default function Dashboard() {
 
         // Buscar informações financeiras do mês selecionado
         const financialResponse = await api.get(
-                  `/dashboard/stats-by-month?month=${selectedMonth}`,
-                  { headers: { Authorization: `Bearer ${token}` } }
-                );
+          `/dashboard/stats-by-month?month=${selectedMonth}`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
         setFinancialData(financialResponse.data);
 
         // Buscar lista de pagamentos das crianças
         const childrenResponse = await api.get(
-                  `/dashboard/children-payments?month=${selectedMonth}`,
-                  { headers: { Authorization: `Bearer ${token}` } }
-                );
+          `/dashboard/children-payments?month=${selectedMonth}`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
 
+        console.log("🛠️ Resposta do backend (crianças):", childrenResponse.data);
 
         if (!childrenResponse.data || typeof childrenResponse.data !== "object") {
           console.error("❌ Erro: O backend retornou um formato inesperado!", childrenResponse.data);
           return;
         }
-        // Transformar o objeto em um array de todas as crianças
-        const allChildren = Object.values(childrenResponse.data).flat();
 
+        // Transformar objeto em array de todas as crianças
+        const allChildren = Object.values(childrenResponse.data).flat().map((child) => ({
+          ...child,
+          date: formatDate(child.date),
+        }));
+
+        console.log("📌 Crianças organizadas:", allChildren);
 
         setChildrenPayments(allChildren);
       } catch (error) {
@@ -93,33 +97,33 @@ export default function Dashboard() {
         </h2>
         <nav>
           <ul>
-              {[
-                { name: "Dashboard", path: "/dashboard" },
-                { name: "Crianças", path: "/children" },
-                { name: "Financeiro", path: "/finance" },
-                { name: "Análises", path: "/analysis" },
-                { name: "Funcionários", path: "/employees" }, 
-                { name: "Configurações", path: "/settings" },
-              ].map(({ name, path }) => (
-                <li
-                  key={name}
-                  onClick={() => router.push(path)}
-                  className={`p-3 rounded cursor-pointer transition-all ${
-                    darkMode ? "hover:bg-gray-700" : "hover:bg-gray-300"
-                  }`}
-                >
-                  {name}
-                </li>
-              ))}
+            {[
+              { name: "Dashboard", path: "/dashboard" },
+              { name: "Crianças", path: "/children" },
+              { name: "Financeiro", path: "/finance" },
+              { name: "Análises", path: "/analysis" },
+              { name: "Funcionários", path: "/employees" },
+              { name: "Configurações", path: "/settings" },
+            ].map(({ name, path }) => (
+              <li
+                key={name}
+                onClick={() => router.push(path)}
+                className={`p-3 rounded cursor-pointer transition-all ${
+                  darkMode ? "hover:bg-gray-700" : "hover:bg-gray-300"
+                }`}
+              >
+                {name}
+              </li>
+            ))}
           </ul>
           {/* Botão de Logout */}
           <button
-              onClick={handleLogout}
-              className="p-2 bg-red-500 text-white rounded hover:bg-red-600 transition-all"
-            >
-              Sair
-            </button>
-      </nav>
+            onClick={handleLogout}
+            className="p-2 bg-red-500 text-white rounded hover:bg-red-600 transition-all"
+          >
+            Sair
+          </button>
+        </nav>
       </aside>
 
       {/* Main Content */}
@@ -146,7 +150,7 @@ export default function Dashboard() {
                 <p className="text-sm text-gray-500">{user.role}</p>
               </div>
             )}
-            
+
             {/* Toggle Modo Dark/Light */}
             <div
               className="relative w-16 h-8 flex items-center bg-gray-300 dark:bg-gray-700 rounded-full p-1 cursor-pointer transition-all"
@@ -163,50 +167,42 @@ export default function Dashboard() {
           </div>
         </header>
 
-        {/* Cards de Métricas */}
-        <section className="grid grid-cols-3 gap-6 mb-6">
-          {financialData && (
-            <>
-              <div className={`p-5 rounded-lg shadow-md ${darkMode ? "bg-gray-800" : "bg-white"}`}>
-                <h3 className="text-lg font-semibold">Receita Total</h3>
-                <p className="text-2xl font-bold text-green-500">{formatCurrency(financialData.totalRevenue)}</p>
-              </div>
-              <div className={`p-5 rounded-lg shadow-md ${darkMode ? "bg-gray-800" : "bg-white"}`}>
-                <h3 className="text-lg font-semibold">Total de Despesas</h3>
-                <p className="text-2xl font-bold text-red-500">{formatCurrency(financialData.totalExpenses)}</p>
-              </div>
-              <div className={`p-5 rounded-lg shadow-md ${darkMode ? "bg-gray-800" : "bg-white"}`}>
-                <h3 className="text-lg font-semibold">Saldo Mensal</h3>
-                <p className={`text-2xl font-bold ${financialData.financialBalance >= 0 ? "text-green-500" : "text-red-500"}`}>
-                  {formatCurrency(financialData.financialBalance)}
-                </p>
-              </div>
-            </>
-          )}
-        </section>
-
         {/* Tabela de Crianças */}
         <section>
           <h2 className="text-xl font-bold mb-3">Crianças</h2>
-          <div className={`rounded-lg shadow-md p-4 ${darkMode ? "bg-gray-800" : "bg-white"}`}>
+          <div className="rounded-lg shadow-md p-4 bg-white">
             <table className="w-full border-collapse">
               <thead>
-                <tr className={`${darkMode ? "bg-gray-700" : "bg-gray-200"}`}>
-                <th className="p-4 text-left font-semibold">Nome</th>
-                <th className="p-4 text-left font-semibold">Data de Pagamento</th>
-                <th className="p-4 text-left font-semibold">Valor Pago</th>
-                <th className="p-4 text-left font-semibold">Status</th>
+                <tr className="bg-gray-100 text-gray-700">
+                  <th className="p-4 text-left font-semibold">Nome</th>
+                  <th className="p-4 text-left font-semibold">Data de Pagamento</th>
+                  <th className="p-4 text-left font-semibold">Valor Pago</th>
+                  <th className="p-4 text-left font-semibold">Status</th>
+                  <th className="p-4 text-left font-semibold">Ações</th>
                 </tr>
               </thead>
               <tbody>
-                {childrenPayments.map(({ fullName, date, amount, Status }, index) => (
-                  <tr key={index} className={`transition-all ${darkMode ? "hover:bg-gray-700" : "border-t border-gray-200 hover:bg-gray-50 transition-all"}`}>
-                    <td className="p-4 text-gray-700">{fullName}</td>
-                    <td className="p-4 text-gray-700">{formatDate(date)}</td>
-                    <td className="p-4 text-gray-700">{formatCurrency(amount)}</td>
-                    <td className={`p-3 ${Status === "Pago" ? "text-green-500" : "text-red-500"}`}>{Status}</td>
-                  </tr>
-                ))}
+                {childrenPayments.length > 0 ? (
+                  childrenPayments.map(({ fullName, date, amount, Status }, index) => (
+                    <tr key={index} className="border-t border-gray-200 hover:bg-gray-50 transition-all">
+                      <td className="p-4 text-gray-700">{fullName}</td>
+                      <td className="p-4 text-gray-700">{date}</td>
+                      <td className="p-4 font-medium text-gray-900">
+                        <span className={Status === "Pago" ? "text-green-500" : "text-red-500"}>
+                          R$ {amount || "0,00"}
+                        </span>
+                      </td>
+                      <td className={`p-4 font-semibold ${Status === "Pago" ? "text-green-500" : "text-red-500"}`}>
+                        {Status}
+                      </td>
+                      <td className="p-4">
+                        <a href="#" className="text-blue-500 hover:underline">Detalhes</a>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr><td colSpan="5" className="text-center p-4 text-gray-500">Nenhum dado encontrado.</td></tr>
+                )}
               </tbody>
             </table>
           </div>
