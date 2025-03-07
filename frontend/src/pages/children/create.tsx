@@ -15,7 +15,7 @@ export default function CreateChild() {
   } = useForm();
 
   // Função de envio do formulário
-  const onSubmit = async (data) => {
+  const onSubmit = async (data: any) => {
     try {
       setLoading(true);
       
