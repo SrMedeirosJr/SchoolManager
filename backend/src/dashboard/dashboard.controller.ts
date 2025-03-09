@@ -47,4 +47,5 @@ async getChildrenPaymentStatus(@Query('month') month: string) {
   async getNewEnrollments(@Query('month') month: number, @Query('year') year: number) {
     return this.dashboardService.getNewEnrollments(month, year);
   }
+
 }
