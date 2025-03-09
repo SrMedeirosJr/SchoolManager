@@ -256,16 +256,16 @@ export default function Dashboard() {
               <RadialBarChart
                 innerRadius="70%"
                 outerRadius="100%"
-                barSize={12}
+                barSize={6}
                 data={[{ value: Math.min(percentage, 100) }]}
                 startAngle={90}
                 endAngle={90 + (percentage / 100) * 360}
               >
                 <RadialBar
-                  minAngle={15}
-                  background
-                  dataKey="value"
-                  fill={color}
+                  dataKey="value" 
+                  fill={color} 
+                  background 
+                  cornerRadius={10} // 🔥 Suaviza as bordas
                 />
               </RadialBarChart>
             </ResponsiveContainer>
