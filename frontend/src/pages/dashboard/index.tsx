@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { Moon, Sun } from "lucide-react";
+import { RadialBarChart, RadialBar, ResponsiveContainer } from "recharts";
 import api from "@/services/api";
 
 
@@ -14,8 +15,12 @@ export default function Dashboard() {
   
   interface FinancialStats {
     totalRevenue: number;
+    totalRevenuePercentage: number;
     totalExpenses: number;
+    totalExpensesPercentage: number;
     financialBalance: number;
+    financialBalancePercentage: number;
+    expectedRevenue: any;
   }
   
   interface Payment {
@@ -51,6 +56,15 @@ export default function Dashboard() {
         timeZone: "UTC",
       });
     };  
+
+    const menuItems = [
+      { name: "Dashboard", path: "/dashboard" },
+      { name: "Crianças", path: "/children" },
+      { name: "Financeiro", path: "/finance" },
+      { name: "Análises", path: "/analysis" },
+      { name: "Funcionários", path: "/employees" },
+      { name: "Configurações", path: "/settings" },
+    ];
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -88,10 +102,6 @@ export default function Dashboard() {
         }
         // Transformar o objeto em um array de todas as crianças
         const allChildren: Payment[] = Object.values(childrenResponse.data).flat() as Payment[];
-        console.log("📌 Dados das crianças processados:", allChildren);
-
-
-
 
         setChildrenPayments(allChildren);
       } catch (error) {
@@ -109,44 +119,60 @@ export default function Dashboard() {
     localStorage.removeItem("token");
     router.push("/login");
   };
-
+  // Estrutura inicial dos dados do gráfico (placeholder)
+  const sampleData = [
+    { name: "Receita", value: 50, fill: "#8884d8" },
+    { name: "Despesas", value: 30, fill: "#e74c3c" },
+    { name: "Saldo", value: 70, fill: "#2ecc71" },
+  ];
   return (
     <div className={`flex min-h-screen ${darkMode ? "bg-gray-900 text-white" : "bg-gray-100 text-gray-900"}`}>
       {/* Sidebar */}
-      <aside className={`w-64 p-5 shadow-md ${darkMode ? "bg-gray-800" : "bg-white"}`}>
-        <h2 className="text-xl font-bold mb-5">
-          Turminha do <span className="text-red-500">Chaves</span>
-        </h2>
-        <nav>
-          <ul>
-              {[
-                { name: "Dashboard", path: "/dashboard" },
-                { name: "Crianças", path: "/children" },
-                { name: "Financeiro", path: "/finance" },
-                { name: "Análises", path: "/analysis" },
-                { name: "Funcionários", path: "/employees" }, 
-                { name: "Configurações", path: "/settings" },
-              ].map(({ name, path }) => (
-                <li
-                  key={name}
-                  onClick={() => router.push(path)}
-                  className={`p-3 rounded cursor-pointer transition-all ${
-                    darkMode ? "hover:bg-gray-700" : "hover:bg-gray-300"
-                  }`}
-                >
-                  {name}
-                </li>
-              ))}
-          </ul>
-          {/* Botão de Logout */}
-          <button
-              onClick={handleLogout}
-              className="p-2 bg-red-500 text-white rounded hover:bg-red-600 transition-all"
-            >
-              Sair
-            </button>
-      </nav>
-      </aside>
+      <aside className={`w-64 p-5 shadow-md flex flex-col h-screen ${darkMode ? "bg-gray-800" : "bg-white"}`}>
+  <div>
+    <h2 className="text-xl font-bold mb-5">
+      Turminha do <span className="text-red-500">Chaves</span>
+    </h2>
+    <nav>
+      <ul className="flex-grow">
+        {menuItems.map(({ name, path }) => (
+          <li
+            key={name}
+            onClick={() => {
+              if (path === "/dashboard") {
+                router.reload();
+              } else {
+                router.push(path);
+              }
+            }}
+            className={`p-3 rounded cursor-pointer transition-all ${
+              router.pathname === path
+                ? darkMode
+                  ? "bg-gray-700 text-white"
+                  : "bg-gray-300 text-black"
+                : darkMode
+                ? "hover:bg-gray-700"
+                : "hover:bg-gray-300"
+            }`}
+          >
+            {name}
+          </li>
+        ))}
+      </ul>
+    </nav>
+  </div>
+
+  {/* Botão de Logout fixado no final */}
+  <div className="mt-auto">
+    <button
+      onClick={handleLogout}
+      className="p-2 bg-red-500 text-white rounded w-full hover:bg-red-600 transition-all"
+    >
+      Sair
+    </button>
+  </div>
+  </aside>
+
 
       {/* Main Content */}
       <main className="flex-1 p-6">
@@ -189,27 +215,75 @@ export default function Dashboard() {
           </div>
         </header>
 
-        {/* Cards de Métricas */}
-        <section className="grid grid-cols-3 gap-6 mb-6">
-          {financialData && (
-            <>
-              <div className={`p-5 rounded-lg shadow-md ${darkMode ? "bg-gray-800" : "bg-white"}`}>
-                <h3 className="text-lg font-semibold">Receita Total</h3>
-                <p className="text-2xl font-bold text-green-500">{formatCurrency(financialData.totalRevenue)}</p>
-              </div>
-              <div className={`p-5 rounded-lg shadow-md ${darkMode ? "bg-gray-800" : "bg-white"}`}>
-                <h3 className="text-lg font-semibold">Total de Despesas</h3>
-                <p className="text-2xl font-bold text-red-500">{formatCurrency(financialData.totalExpenses)}</p>
-              </div>
-              <div className={`p-5 rounded-lg shadow-md ${darkMode ? "bg-gray-800" : "bg-white"}`}>
-                <h3 className="text-lg font-semibold">Saldo Mensal</h3>
-                <p className={`text-2xl font-bold ${financialData.financialBalance >= 0 ? "text-green-500" : "text-red-500"}`}>
-                  {formatCurrency(financialData.financialBalance)}
-                </p>
-              </div>
-            </>
-          )}
-        </section>
+        
+
+       {/* Cards de Métricas */}
+<section className="grid grid-cols-3 gap-6 mb-6">
+  {financialData && (
+    <>
+      {[
+        {
+          title: "Receita Total",
+          value: financialData.totalRevenue,
+          percentage: financialData.totalRevenuePercentage,
+          color: "#22c55e",
+        },
+        {
+          title: "Total de Despesas",
+          value: financialData.totalExpenses,
+          percentage: financialData.totalExpensesPercentage,
+          color: "#e74c3c",
+        },
+        {
+          title: "Saldo Mensal",
+          value: financialData.financialBalance,
+          percentage: Math.abs(financialData.financialBalancePercentage),
+          color: financialData.financialBalancePercentage >= 0 ? "#2ecc71" : "#e74c3c",
+        },
+      ].map(({ title, value, percentage, color }, index) => (
+        <div
+          key={index}
+          className={`p-5 rounded-lg shadow-md flex items-center justify-between ${darkMode ? "bg-gray-800" : "bg-white"}`}
+        >
+          <div>
+            <h3 className="text-lg font-semibold">{title}</h3>
+            <p className={`text-2xl font-bold ${color === "#e74c3c" ? "text-red-500" : "text-green-500"}`}>
+              {formatCurrency(value)}
+            </p>
+          </div>
+          <div className="relative w-20 h-20">
+            <ResponsiveContainer width="100%" height="100%">
+              <RadialBarChart
+                innerRadius="70%"
+                outerRadius="100%"
+                barSize={12}
+                data={[{ value: Math.min(percentage, 100) }]}
+                startAngle={90}
+                endAngle={90 + (percentage / 100) * 360}
+              >
+                <RadialBar
+                  minAngle={15}
+                  background
+                  dataKey="value"
+                  fill={color}
+                />
+              </RadialBarChart>
+            </ResponsiveContainer>
+            <p
+              className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-sm font-bold"
+              style={{ color }}
+            >
+              {percentage}%
+            </p>
+          </div>
+        </div>
+      ))}
+    </>
+  )}
+</section>
+
+
+
 
         {/* Tabela de Crianças */}
         <section>
