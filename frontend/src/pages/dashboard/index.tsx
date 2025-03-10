@@ -265,7 +265,7 @@ export default function Dashboard() {
                   dataKey="value" 
                   fill={color} 
                   background 
-                  cornerRadius={10} // 🔥 Suaviza as bordas
+                  cornerRadius={10} 
                 />
               </RadialBarChart>
             </ResponsiveContainer>
