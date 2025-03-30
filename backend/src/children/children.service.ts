@@ -13,14 +13,19 @@ export class ChildrenService {
   async create(createChildDto: Partial<Child>, userId: number): Promise<Child> {
     const child = this.childrenRepository.create({
       ...createChildDto,
-      createdBy: userId, // Rastreia quem criou
+      createdBy: userId, 
     });
     return this.childrenRepository.save(child);
   }
 
-  async findAll(): Promise<Child[]> {
-    return this.childrenRepository.find();
+  async findAll(): Promise<any[]> {
+    const children = await this.childrenRepository.find({
+      order: { fullName: 'ASC' },
+    });
+  
+    return children.map(({ id, ...rest }) => rest);
   }
+  
 
   async findOne(id: number): Promise<Child> {
     const child = await this.childrenRepository.findOne({ where: { id } });
@@ -33,15 +38,15 @@ export class ChildrenService {
   async update(id: number, updateChildDto: Partial<Child>, userId: number): Promise<Child> {
     await this.childrenRepository.update(id, {
       ...updateChildDto,
-      updatedBy: userId, // Rastreia quem atualizou
+      updatedBy: userId, 
     });
     return this.findOne(id);
   }
 
   async remove(id: number, userId: number): Promise<void> {
     const child = await this.findOne(id);
-    child.deletedBy = userId; // Rastreia quem deletou
-    await this.childrenRepository.save(child); // Salva a alteração antes de remover
+    child.deletedBy = userId; 
+    await this.childrenRepository.save(child); 
     await this.childrenRepository.remove(child);
   }
 }

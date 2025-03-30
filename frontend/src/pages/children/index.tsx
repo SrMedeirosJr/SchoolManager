@@ -91,82 +91,83 @@ export default function ChildrenList() {
       {/* Tabela de Crianças */}
       <div className="rounded-lg shadow-md p-4 bg-white">
         <table className="w-full border-collapse">
-          <thead>
-            <tr className="bg-gray-200">
-              <th className="p-4 text-left font-semibold">Id</th>
-              <th className="p-4 text-left font-semibold">Nome</th>
-              <th className="p-4 text-left font-semibold">Data de Nascimento</th>
-              <th className="p-4 text-left font-semibold">Data de Matrícula</th>
-              <th className="p-4 text-left font-semibold">Horário</th>
-              <th className="p-4 text-left font-semibold">Turma</th>
-              <th className="p-4 text-left font-semibold">Mensalidade</th>
-              <th className="p-4 text-left font-semibold">Dia de Vencimento</th>
-              <th className="p-4 text-left font-semibold">Nome do Pai</th>
-              <th className="p-4 text-left font-semibold">Telefone Pai</th>
-              <th className="p-4 text-left font-semibold">Nome da Mãe</th>
-              <th className="p-4 text-left font-semibold">Telefone Mãe</th>
-            </tr>
-          </thead>
-          <tbody>
-            {children.length > 0 ? (
-              children.map(
-                ({
-                  id,
-                  fullName,
-                  birthDate,
-                  enrollmentDate,
-                  schedule,
-                  class: turma,
-                  feeAmount,
-                  dueDate,
-                  fatherName,
-                  fatherPhone,
-                  motherName,
-                  motherPhone,
-                }) => (
-                  <tr
-                    key={id}
-                    className="border-t border-gray-200 transition-all hover:bg-gray-100 cursor-pointer"
-                    onClick={() =>
-                      setSelectedChild({
-                        id,
-                        fullName,
-                        birthDate,
-                        enrollmentDate,
-                        schedule,
-                        turma,
-                        feeAmount,
-                        dueDate,
-                        fatherName,
-                        fatherPhone,
-                        motherName,
-                        motherPhone,
-                      })
-                    }
-                  >
-                    <td className="p-4 text-gray-700">{id}</td>
-                    <td className="p-4 text-gray-700">{fullName}</td>
-                    <td className="p-4 text-gray-700">{formatDate(birthDate)}</td>
-                    <td className="p-4 text-gray-700">{formatDate(enrollmentDate)}</td>
-                    <td className="p-4 text-gray-700">{schedule}</td>
-                    <td className="p-4 text-gray-700">{turma}</td>
-                    <td className="p-4 text-gray-700">{formatCurrency(feeAmount)}</td>
-                    <td className="p-4 text-gray-700">{dueDate}</td>
-                    <td className="p-4 text-gray-700">{fatherName !== "-" ? fatherName : "Não informado"}</td>
-                    <td className="p-4 text-gray-700">{fatherPhone !== "-" ? fatherPhone : "Não informado"}</td>
-                    <td className="p-4 text-gray-700">{motherName !== "-" ? motherName : "Não informado"}</td>
-                    <td className="p-4 text-gray-700">{motherPhone !== "-" ? motherPhone : "Não informado"}</td>
-                  </tr>
-                )
+
+
+        <thead>
+          <tr className="bg-gray-200">
+            <th className="p-4 text-left font-semibold">Nome</th>
+            <th className="p-4 text-left font-semibold">Data de Nascimento</th>
+            <th className="p-4 text-left font-semibold">Data de Matrícula</th>
+            <th className="p-4 text-left font-semibold">Horário</th>
+            <th className="p-4 text-left font-semibold">Turma</th>
+            <th className="p-4 text-left font-semibold">Mensalidade</th>
+            <th className="p-4 text-left font-semibold">Dia de Vencimento</th>
+            <th className="p-4 text-left font-semibold">Nome do Pai</th>
+            <th className="p-4 text-left font-semibold">Telefone Pai</th>
+            <th className="p-4 text-left font-semibold">Nome da Mãe</th>
+            <th className="p-4 text-left font-semibold">Telefone Mãe</th>
+          </tr>
+        </thead>
+        <tbody>
+          {children.length > 0 ? (
+            children.map(
+              ({
+                id,
+                fullName,
+                birthDate,
+                enrollmentDate,
+                schedule,
+                class: turma,
+                feeAmount,
+                dueDate,
+                fatherName,
+                fatherPhone,
+                motherName,
+                motherPhone,
+              }) => (
+                <tr
+                  key={id}
+                  className="border-t border-gray-200 transition-all hover:bg-gray-100 cursor-pointer"
+                  onClick={() =>
+                    setSelectedChild({
+                      id,
+                      fullName,
+                      birthDate,
+                      enrollmentDate,
+                      schedule,
+                      turma,
+                      feeAmount,
+                      dueDate,
+                      fatherName,
+                      fatherPhone,
+                      motherName,
+                      motherPhone,
+                    })
+                  }
+                >
+                  <td className="p-4 text-gray-700">{fullName}</td>
+                  <td className="p-4 text-gray-700">{formatDate(birthDate)}</td>
+                  <td className="p-4 text-gray-700">{formatDate(enrollmentDate)}</td>
+                  <td className="p-4 text-gray-700">{schedule}</td>
+                  <td className="p-4 text-gray-700">{turma}</td>
+                  <td className="p-4 text-gray-700">{formatCurrency(feeAmount)}</td>
+                  <td className="p-4 text-gray-700">{dueDate}</td>
+                  <td className="p-4 text-gray-700">{fatherName !== "-" ? fatherName : "Não informado"}</td>
+                  <td className="p-4 text-gray-700">{fatherPhone !== "-" ? fatherPhone : "Não informado"}</td>
+                  <td className="p-4 text-gray-700">{motherName !== "-" ? motherName : "Não informado"}</td>
+                  <td className="p-4 text-gray-700">{motherPhone !== "-" ? motherPhone : "Não informado"}</td>
+                </tr>
               )
-            ) : (
-              <tr>
-                <td colSpan={12} className="text-center p-3">
-                  Nenhuma criança encontrada.
-                </td>
-              </tr>
-            )}
-          </tbody>
+            )
+          ) : (
+            <tr>
+              <td colSpan={11} className="text-center p-3">
+                Nenhuma criança encontrada.
+              </td>
+            </tr>
+          )}
+        </tbody>
+
         </table>
       </div>
 

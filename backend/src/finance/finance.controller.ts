@@ -30,6 +30,7 @@ export class FinanceController {
     return this.financeService.findAll();
   }
 
+  
   @UseGuards(AuthGuard)
   @Get(':id')
   findOne(@Param('id') id: number): Promise<Finance> {
