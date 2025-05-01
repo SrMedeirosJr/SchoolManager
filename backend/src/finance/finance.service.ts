@@ -20,7 +20,7 @@ export class FinanceService {
     private employeeRepository: Repository<Employee>,
 
     @InjectRepository(Category)
-    private categoryRepository: Repository<Category>, // Repositório de categorias
+    private categoryRepository: Repository<Category>, 
   ) {}
 
   async create(createFinanceDto: CreateFinanceDto, userId: number): Promise<Finance> {
@@ -36,8 +36,8 @@ export class FinanceService {
 
     const finance = this.financeRepository.create({
       ...financeData,
-      category, // Agora associamos a entidade Category corretamente
-      createdBy: userId, // Salvando quem criou a transação
+      category, 
+      createdBy: userId, 
     });
 
     if (childId) {
@@ -61,22 +61,24 @@ export class FinanceService {
 
   async findAll(): Promise<any[]> {
     const finances = await this.financeRepository.find({
-      relations: ['child', 'employee', 'category'], // Adicionamos a relação com Category
+      relations: ['child', 'employee', 'category'], 
     });
 
     return finances.map(finance => ({
       id: finance.id,
       date: finance.date,
       description: finance.description,
-      category: finance.category ? finance.category.name : null, // Exibe o nome da categoria
+      category: finance.category ? finance.category.name : null, 
       amount: finance.amount,
       paymentMethod: finance.paymentMethod,
       type: finance.type,
-      createdBy: finance.createdBy, // Adicionando rastreabilidade na listagem
+      createdBy: finance.createdBy, 
       updatedBy: finance.updatedBy,
       deletedBy: finance.deletedBy,
       childId: finance.child ? finance.child.id : null,
+      childName: finance.child ? finance.child.fullName : null,
       employeeId: finance.employee ? finance.employee.id : null,
+      employeeName: finance.employee ? finance.employee.fullName : null,
     }));
   }
 
@@ -97,16 +99,14 @@ export class FinanceService {
 
     let category: Category | undefined = undefined;
     if (categoryId) {
-        // Converter categoryId para número
         const categoryIdNumber = parseInt(categoryId as unknown as string, 10);
-
         category = await this.categoryRepository.findOne({ where: { id: categoryIdNumber } }) || undefined;
     }
 
     await this.financeRepository.update(id, {
         ...financeData,
-        category, // Atualizamos a categoria corretamente
-        updatedBy: userId, // Salvando quem atualizou a transação
+        category, 
+        updatedBy: userId, 
     });
 
     return this.findOne(id);
@@ -115,7 +115,7 @@ export class FinanceService {
 
   async remove(id: number, userId: number): Promise<void> {
     const finance = await this.findOne(id);
-    finance.deletedBy = userId; // Salvando quem deletou a transação
+    finance.deletedBy = userId;
     await this.financeRepository.save(finance);
     await this.financeRepository.remove(finance);
   }
