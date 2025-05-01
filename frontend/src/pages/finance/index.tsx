@@ -5,22 +5,10 @@ import { ArrowLeft, Plus } from "lucide-react";
 import axios from "axios";
 
 export default function FinanceList() {
-   interface Child {
-    id: number;
-    fullName: string;
-    }
-
-    interface Employee {
-      id: number;
-      fullName: string;
-      }
-  
-
   const [financeData, setFinanceData] = useState([]);
-  const [employees, setEmployees] = useState({});
-  const [children, setChildren] = useState({});
   const router = useRouter();
 
+  
   // Formatar valores monetários
   const formatCurrency = (value: number) =>
     new Intl.NumberFormat("pt-BR", {
@@ -28,12 +16,12 @@ export default function FinanceList() {
       currency: "BRL",
     }).format(value);
 
-  // Formatar datas para o padrão DD/MM/AAAA
-  const formatDate = (dateString: string) => {
-    if (!dateString) return "-";
-    return new Date(dateString).toLocaleDateString("pt-BR");
-  };
-
+    const formatDate = (dateString: string) => {
+      if (!dateString) return "-";
+      const [year, month, day] = dateString.split("T")[0].split("-");
+      return `${day}/${month}/${year}`;
+    };
+ 
   useEffect(() => {
     const fetchFinanceData = async () => {
       try {
@@ -49,31 +37,7 @@ export default function FinanceList() {
           headers: { Authorization: `Bearer ${token}` },
         });
 
-        setFinanceData(financeResponse.data);
-
-        // Buscar funcionários e crianças para mapear nomes
-        const employeesResponse = await api.get("/employees", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-
-        const childrenResponse = await api.get("/children", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-
-        // Criar dicionários para facilitar a busca pelo nome
-        const employeeMap: Record<number, string> = {}; // Definir como um objeto indexado pelo ID do funcionário
-        employeesResponse.data.forEach((emp: Employee) => {
-        employeeMap[emp.id] = emp.fullName;
-        });
-
-        const childrenMap: Record<number, string> = {}; // Definir como um objeto indexado pelo ID da criança
-        childrenResponse.data.forEach((child: Child) => {
-        childrenMap[child.id] = child.fullName;
-        });
-
-        setEmployees(employeeMap);
-        setChildren(childrenMap);
-        
+        setFinanceData(financeResponse.data);        
       } catch (error: unknown) {
         console.error("Erro ao buscar funcionários:", error);
       
@@ -131,25 +95,46 @@ export default function FinanceList() {
           </thead>
           <tbody>
             {financeData.length > 0 ? (
-              financeData.map(({ id, date, description, category, amount, paymentMethod, type, employeeId, childId }) => (
-                <tr key={id} className="border-t border-gray-200 transition-all hover:bg-gray-100">
+              financeData.map(
+                ({
+                  id,
+                  date,
+                  description,
+                  category,
+                  amount,
+                  paymentMethod,
+                  type,
+                  employeeName,
+                  childName,
+                }) => (
+                  <tr
+                    key={id}
+                    className="border-t border-gray-200 transition-all hover:bg-gray-100"
+                  >
                   <td className="p-4 text-gray-700">{formatDate(date)}</td>
                   <td className="p-4 text-gray-700">{description}</td>
                   <td className="p-4 text-gray-700">{category}</td>
                   <td className="p-4 text-gray-700">{formatCurrency(amount)}</td>
                   <td className="p-4 text-gray-700">{paymentMethod}</td>
-                  <td className={`p-4 ${type === "Faturamento" ? "text-green-500" : "text-red-500"}`}>
-                    {type}
+                  <td
+                      className={`p-4 ${
+                        type === "Faturamento" ? "text-green-500" : "text-red-500"
+                      }`}
+                    >
+                      {type}
                   </td>
-                  <td className="p-4">
-                    {employeeId ? employees[employeeId] : childId ? children[childId] : "Outro"}
+                  <td className="p-4 text-gray-700">
+                    {employeeName || childName || "Outro"}
                   </td>
                 </tr>
-              ))
+              )
+            )
             ) : (
               <tr>
-                <td colSpan={7} className="text-center p-3">Nenhuma transação encontrada.</td>
-              </tr>
+                <td colSpan={7} className="text-center p-3">
+                  Nenhuma transação encontrada.
+                </td>
+                </tr>
             )}
           </tbody>
         </table>

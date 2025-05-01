@@ -18,13 +18,10 @@ export class ChildrenService {
     return this.childrenRepository.save(child);
   }
 
-  async findAll(): Promise<any[]> {
-    const children = await this.childrenRepository.find({
-      order: { fullName: 'ASC' },
-    });
-  
-    return children.map(({ id, ...rest }) => rest);
+  async findAll(): Promise<Child[]> {
+    return this.childrenRepository.find({ order: { fullName: 'ASC' } });
   }
+  
   
 
   async findOne(id: number): Promise<Child> {

@@ -117,7 +117,7 @@ export default function ChildrenList() {
                 birthDate,
                 enrollmentDate,
                 schedule,
-                class: turma,
+                turma,
                 feeAmount,
                 dueDate,
                 fatherName,
