@@ -27,9 +27,7 @@ export default function CreateFinance() {
     amount: "",
     paymentMethod: "",
     type: "",
-    referenceId: "",
-    employeeId: "",
-    childId: ""
+    referenceId: ""
   });
 
   const [employees, setEmployees] = useState([]);
@@ -47,17 +45,11 @@ export default function CreateFinance() {
           return;
         }
 
-        const categoriesResponse = await api.get("/category", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-
-        const employeesResponse = await api.get("/employees", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-
-        const childrenResponse = await api.get("/children", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const [categoriesResponse, employeesResponse, childrenResponse] = await Promise.all([
+                  api.get("/category", { headers: { Authorization: `Bearer ${token}` } }),
+                  api.get("/employees", { headers: { Authorization: `Bearer ${token}` } }),
+                  api.get("/children", { headers: { Authorization: `Bearer ${token}` } })
+        ]);
 
         setCategories(categoriesResponse.data);
         setEmployees(employeesResponse.data);
@@ -70,7 +62,7 @@ export default function CreateFinance() {
     fetchData();
   }, [router]);
 
-  const handleTypeChange = (type: any) => {
+  const handleTypeChange = (type: string) => {
     setFormData({ ...formData, type, referenceId: "" });
 
     if (type === "Despesa") {
@@ -81,6 +73,7 @@ export default function CreateFinance() {
       setReferenceOptions([]);
     }
   };
+
 
   const handleChange = (e: any) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -93,7 +86,8 @@ export default function CreateFinance() {
     try {
       const { date, description, category, amount, paymentMethod, type, referenceId } = formData;
   
-      let requestData: any = {
+  
+      const requestData: any = {
         date,
         description,
         category,
@@ -104,10 +98,18 @@ export default function CreateFinance() {
   
       if (type === "Despesa" && referenceId) {
         requestData.employeeId = parseInt(referenceId, 10);
-      } else if (type === "Faturamento" && referenceId) {
-        requestData.childId = parseInt(referenceId, 10);
       }
   
+      if (type === "Faturamento" && referenceId) {
+        const parsed = Number(referenceId);
+        if (!isNaN(parsed)) {
+          requestData.childId = parsed;
+        } else {
+          console.warn("⚠️ referenceId inválido para childId:", referenceId);
+        }
+      }
+  
+ 
       const token = localStorage.getItem("token");
       await api.post("/finance", requestData, {
         headers: { Authorization: `Bearer ${token}` },
@@ -120,6 +122,7 @@ export default function CreateFinance() {
       setLoading(false);
     }
   };
+  
   
 
   return (
@@ -192,18 +195,25 @@ export default function CreateFinance() {
           </div>
 
           {referenceOptions.length > 0 && (
-            <div>
-              <label className="block text-gray-700 font-medium">Referência</label>
-              <select name="referenceId" value={formData.referenceId} onChange={handleChange} className="w-full p-2 border rounded">
-                <option value="">Nenhuma</option>
-                {referenceOptions.map((ref) => (
-                  <option key={ref.id} value={ref.id}>
-                    {ref.fullName}
-                  </option>
-                ))}
-              </select>
-            </div>
-          )}
+          <div>
+            <label className="block text-gray-700 font-medium">
+              {formData.type === "Faturamento" ? "Criança" : "Funcionário"}
+            </label>
+            <select
+              name="referenceId"
+              value={formData.referenceId}
+              onChange={handleChange}
+              className="w-full p-2 border rounded"
+            >
+              <option value="">Nenhuma</option>
+              {referenceOptions.map((ref) => (
+                <option key={ref.id} value={String(ref.id)}>
+                {ref.fullName}
+              </option>              
+              ))}
+            </select>
+          </div>
+        )}
         </div>
 
         <div className="mt-6 flex justify-end">
