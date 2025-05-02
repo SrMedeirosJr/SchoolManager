@@ -24,11 +24,11 @@ export default function Dashboard() {
   }
   
   interface Payment {
-    id: number;
     fullName: string;
-    date: string;
-    amount: number;
-    Status: string;
+    dueDate: string;
+    paymentDate: string;
+    amountPaid: number;
+    status: string;
   }
 
   
@@ -37,6 +37,7 @@ export default function Dashboard() {
   const [financialData, setFinancialData] = useState<FinancialStats | null>(null);
   const [childrenPayments, setChildrenPayments] = useState<Payment[]>([]);
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
+  const selectedYear = new Date().getFullYear();
   const router = useRouter();
 
   // Função para formatar os valores corretamente como moeda brasileira
@@ -56,6 +57,14 @@ export default function Dashboard() {
         timeZone: "UTC",
       });
     };  
+
+    const formatDueDate = (day: number): string => {
+      if (!day || isNaN(day)) return "N/A";
+      const year = new Date().getFullYear();
+      const date = new Date(year, selectedMonth - 1, day);
+      return date.toLocaleDateString("pt-BR");
+    };
+    
 
     const menuItems = [
       { name: "Dashboard", path: "/dashboard" },
@@ -91,25 +100,22 @@ export default function Dashboard() {
 
         // Buscar lista de pagamentos das crianças
         const childrenResponse = await api.get(
-                  `/dashboard/children-payments?month=${selectedMonth}`,
+                  `/dashboard/children-status?month=${selectedMonth}&year=${selectedYear}`,
                   { headers: { Authorization: `Bearer ${token}` } }
                 );
 
-
-        if (!childrenResponse.data || typeof childrenResponse.data !== "object") {
-          console.error("❌ Erro: O backend retornou um formato inesperado!", childrenResponse.data);
-          return;
-        }
-        // Transformar o objeto em um array de todas as crianças
-        const allChildren: Payment[] = Object.values(childrenResponse.data).flat() as Payment[];
-
-        setChildrenPayments(allChildren);
-      } catch (error) {
-        console.error("❌ Erro ao buscar dados do backend:", error);
-        localStorage.removeItem("token");
-        router.push("/login");
-      }
-    };
+                if (!Array.isArray(childrenResponse.data)) {
+                  console.error("❌ Erro: O backend retornou um formato inesperado!", childrenResponse.data);
+                  return;
+                }
+        
+                setChildrenPayments(childrenResponse.data);
+              } catch (error) {
+                console.error("❌ Erro ao buscar dados do backend:", error);
+                localStorage.removeItem("token");
+                router.push("/login");
+              }
+            };
 
     fetchData();
   }, [router, selectedMonth]); 
@@ -294,17 +300,22 @@ export default function Dashboard() {
                 <tr className={`${darkMode ? "bg-gray-700" : "bg-gray-200"}`}>
                 <th className="p-4 text-left font-semibold">Nome</th>
                 <th className="p-4 text-left font-semibold">Data de Pagamento</th>
+                <th className="p-4 text-left font-semibold">Data de Vencimento</th>
                 <th className="p-4 text-left font-semibold">Valor Pago</th>
                 <th className="p-4 text-left font-semibold">Status</th>
                 </tr>
               </thead>
               <tbody>
-                {childrenPayments.map(({ fullName, date, amount, Status }, index) => (
-                  <tr key={index} className={`transition-all ${darkMode ? "hover:bg-gray-700" : "border-t border-gray-200 hover:bg-gray-50 transition-all"}`}>
+              {childrenPayments.map(({ fullName, paymentDate, dueDate, amountPaid, status }, index) => (
+                  <tr
+                    key={index}
+                    className={`transition-all ${darkMode ? "hover:bg-gray-700" : "border-t border-gray-200 hover:bg-gray-50 transition-all"}`}
+                  >
                     <td className="p-4 text-gray-700">{fullName}</td>
-                    <td className="p-4 text-gray-700">{formatDate(date)}</td>
-                    <td className="p-4 text-gray-700">{formatCurrency(amount)}</td>
-                    <td className={`p-3 ${Status === "Pago" ? "text-green-500" : "text-red-500"}`}>{Status}</td>
+                    <td className="p-4 text-gray-700">{formatDate(paymentDate)}</td>
+                    <td className="p-4 text-gray-700">{formatDueDate(Number(dueDate))}</td>
+                    <td className="p-4 text-gray-700">{formatCurrency(amountPaid)}</td>
+                    <td className={`p-3 ${status === "Pago" ? "text-green-500" : "text-red-500"}`}>{status}</td>
                   </tr>
                 ))}
               </tbody>
