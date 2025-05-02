@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
-import { Moon, Sun } from "lucide-react";
+import { Moon, Sun, X } from "lucide-react";
 import { RadialBarChart, RadialBar, ResponsiveContainer } from "recharts";
 import api from "@/services/api";
 
@@ -24,18 +24,28 @@ export default function Dashboard() {
   }
   
   interface Payment {
+    id: number;
     fullName: string;
-    dueDate: string;
+    dueDate: number;
     paymentDate: string;
     amountPaid: number;
     status: string;
+    birthDate: Date;
+    enrollmentDate: Date;
+    schedule: string;
+    turma: string;
+    feeAmount: number;
+    fatherName: string;
+    fatherPhone: string;
+    motherName: string;
+    motherPhone: string;
   }
-
   
   const [darkMode, setDarkMode] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   const [financialData, setFinancialData] = useState<FinancialStats | null>(null);
   const [childrenPayments, setChildrenPayments] = useState<Payment[]>([]);
+  const [selectedChild, setSelectedChild] = useState<Payment | null>(null);
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
   const selectedYear = new Date().getFullYear();
   const router = useRouter();
@@ -47,10 +57,10 @@ export default function Dashboard() {
       currency: "BRL",
     }).format(value);
 
-    const formatDate = (date: string) => {
-      if (!date || date === "N/A") return "N/A";
-      const d = new Date(date);
-      return d.toLocaleDateString("pt-BR", {
+    const formatDate = (date: string | Date): string => {
+      if (!date) return "N/A";
+      const parsedDate = typeof date === "string" ? new Date(date) : date;
+      return parsedDate.toLocaleDateString("pt-BR", {
         day: "2-digit",
         month: "2-digit",
         year: "numeric",
@@ -64,6 +74,7 @@ export default function Dashboard() {
       const date = new Date(year, selectedMonth - 1, day);
       return date.toLocaleDateString("pt-BR");
     };
+    
     
 
     const menuItems = [
@@ -131,6 +142,7 @@ export default function Dashboard() {
     { name: "Despesas", value: 30, fill: "#e74c3c" },
     { name: "Saldo", value: 70, fill: "#2ecc71" },
   ];
+  
   return (
     <div className={`flex min-h-screen ${darkMode ? "bg-gray-900 text-white" : "bg-gray-100 text-gray-900"}`}>
       {/* Sidebar */}
@@ -287,15 +299,12 @@ export default function Dashboard() {
     </>
   )}
 </section>
-
-
-
-
         {/* Tabela de Crianças */}
         <section>
           <h2 className="text-xl font-bold mb-3">Crianças</h2>
           <div className={`rounded-lg shadow-md p-4 ${darkMode ? "bg-gray-800" : "bg-white"}`}>
-            <table className="w-full border-collapse">
+            <div className="max-h-[500px] overflow-y-auto">
+             <table className="w-full border-collapse">
               <thead>
                 <tr className={`${darkMode ? "bg-gray-700" : "bg-gray-200"}`}>
                 <th className="p-4 text-left font-semibold">Nome</th>
@@ -306,22 +315,54 @@ export default function Dashboard() {
                 </tr>
               </thead>
               <tbody>
-              {childrenPayments.map(({ fullName, paymentDate, dueDate, amountPaid, status }, index) => (
-                  <tr
-                    key={index}
-                    className={`transition-all ${darkMode ? "hover:bg-gray-700" : "border-t border-gray-200 hover:bg-gray-50 transition-all"}`}
-                  >
-                    <td className="p-4 text-gray-700">{fullName}</td>
-                    <td className="p-4 text-gray-700">{formatDate(paymentDate)}</td>
-                    <td className="p-4 text-gray-700">{formatDueDate(Number(dueDate))}</td>
-                    <td className="p-4 text-gray-700">{formatCurrency(amountPaid)}</td>
-                    <td className={`p-3 ${status === "Pago" ? "text-green-500" : "text-red-500"}`}>{status}</td>
-                  </tr>
-                ))}
+              {childrenPayments.map((child) => (
+                <tr
+                  key={child.id}
+                  onDoubleClick={() => setSelectedChild(child)}
+                  className={`cursor-pointer transition-all ${darkMode ? "hover:bg-gray-700" : "border-t border-gray-200 hover:bg-gray-50"}`}
+                >
+                  <td className="p-4 text-gray-700">{child.fullName}</td>
+                  <td className="p-4 text-gray-700">{formatDate(child.paymentDate)}</td>
+                  <td className="p-4 text-gray-700">{formatDueDate(Number(child.dueDate))}</td>
+                  <td className="p-4 text-gray-700">{formatCurrency(child.amountPaid)}</td>
+                  <td className={`p-3 ${child.status === "Pago" ? "text-green-500" : "text-red-500"}`}>{child.status}</td>
+                </tr>
+              ))}
               </tbody>
             </table>
           </div>
+          </div>
         </section>
+        {/* Modal */}
+        {selectedChild && (
+          <div
+            className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50"
+            onClick={() => setSelectedChild(null)}
+          >
+            <div
+              className="bg-white p-6 rounded shadow-lg w-[95%] max-w-md relative"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button
+                className="absolute top-2 right-2 text-gray-500 hover:text-gray-800 text-xl font-bold"
+                onClick={() => setSelectedChild(null)}
+              >
+                ×
+              </button>
+              <h2 className="text-lg font-bold mb-4 uppercase">{selectedChild.fullName}</h2>
+              <p><strong>Data de Nascimento:</strong> {formatDate(selectedChild.birthDate)}</p>
+              <p><strong>Data de Matrícula:</strong> {formatDate(selectedChild.enrollmentDate)}</p>
+              <p><strong>Horário:</strong> {selectedChild.schedule}</p>
+              <p><strong>Turma:</strong> {selectedChild.turma}</p>
+              <p><strong>Mensalidade:</strong> {formatCurrency(selectedChild.feeAmount)}</p>
+              <p><strong>Dia de Vencimento:</strong> {formatDueDate(selectedChild.dueDate)}</p>
+              <p><strong>Nome do Pai:</strong> {selectedChild.fatherName}</p>
+              <p><strong>Telefone Pai:</strong> {selectedChild.fatherPhone}</p>
+              <p><strong>Nome da Mãe:</strong> {selectedChild.motherName}</p>
+              <p><strong>Telefone Mãe:</strong> {selectedChild.motherPhone}</p>
+            </div>
+          </div>
+        )}
       </main>
     </div>
   );
