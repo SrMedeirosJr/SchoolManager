@@ -13,14 +13,18 @@ export default function ChildrenList() {
     schedule: string;
     turma: string;
     feeAmount: number;     
-    dueDate: Date;         
+    dueDate: number;         
     fatherName: string;
     fatherPhone: string;
     motherName: string;
     motherPhone: string;
 }
-  
+interface ChildStats {
+  tempoMatriculado: string;
+  valorArrecadado: string;
+}  
   const [children, setChildren] = useState([]);
+  const [childStats, setChildStats] = useState<ChildStats | null>(null);
   const router = useRouter();
   const [selectedChild, setSelectedChild] = useState<Child | null>(null);
   
@@ -63,6 +67,18 @@ export default function ChildrenList() {
 
     fetchChildren();
   }, [router]);
+  const handleOpenModal = async (child: Child) => {
+    setSelectedChild(child);
+    try {
+      const token = localStorage.getItem("token");
+      const response = await api.get(`/dashboard/child-stats/${child.id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setChildStats(response.data);
+    } catch (error) {
+      console.error("Erro ao buscar estatísticas da criança:", error);
+    }
+  };
 
   return (
     <div className="p-6">
@@ -128,8 +144,8 @@ export default function ChildrenList() {
                 <tr
                   key={id}
                   className="border-t border-gray-200 transition-all hover:bg-gray-100 cursor-pointer"
-                  onClick={() =>
-                    setSelectedChild({
+                  onDoubleClick={() =>
+                    handleOpenModal({
                       id,
                       fullName,
                       birthDate,
@@ -143,7 +159,7 @@ export default function ChildrenList() {
                       motherName,
                       motherPhone,
                     })
-                  }
+                  }                
                 >
                   <td className="p-4 text-gray-700">{fullName}</td>
                   <td className="p-4 text-gray-700">{formatDate(birthDate)}</td>
@@ -173,52 +189,43 @@ export default function ChildrenList() {
 
       {/* Modal de Detalhes da Criança */}
       {selectedChild && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="bg-white p-6 rounded shadow-lg w-96">
-            <h2 className="text-lg font-bold mb-4">{selectedChild.fullName}</h2>
+        <div
+          className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50"
+          onClick={() => setSelectedChild(null)}
+        >
+          <div
+            className="bg-white p-6 rounded shadow-lg w-[95%] max-w-md relative"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              className="absolute top-2 right-2 text-gray-500 hover:text-gray-800 text-xl font-bold"
+              onClick={() => setSelectedChild(null)}
+            >
+              ×
+            </button>
+            <h2 className="text-lg font-bold mb-4 uppercase">{selectedChild.fullName}</h2>
+            <p><strong>Data de Nascimento:</strong> {formatDate(selectedChild.birthDate)}</p>
+            <p><strong>Data de Matrícula:</strong> {formatDate(selectedChild.enrollmentDate)}</p>
+            <p><strong>Horário:</strong> {selectedChild.schedule}</p>
+            <p><strong>Turma:</strong> {selectedChild.turma}</p>
+            <p><strong>Mensalidade:</strong> {formatCurrency(selectedChild.feeAmount)}</p>
             <p>
-              <strong>Data de Nascimento:</strong> {formatDate(selectedChild.birthDate)}
+              <strong>Dia de Vencimento:</strong> {
+                selectedChild.dueDate
+                  ? new Date(new Date().getFullYear(), new Date().getMonth(), selectedChild.dueDate).toLocaleDateString("pt-BR")
+                  : "Não informado"
+              }
             </p>
-            <p>
-              <strong>Data de Matrícula:</strong> {formatDate(selectedChild.enrollmentDate)}
-            </p>
-            <p>
-              <strong>Horário:</strong> {selectedChild.schedule}
-            </p>
-            <p>
-              <strong>Turma:</strong> {selectedChild.turma}
-            </p>
-            <p>
-              <strong>Mensalidade:</strong> {formatCurrency(selectedChild.feeAmount)}
-            </p>
-            <p>
-            <strong>Dia de Vencimento:</strong> {selectedChild.dueDate.toLocaleDateString("pt-BR")}
-            </p>
-            <p>
-              <strong>Nome do Pai:</strong>{" "}
-              {selectedChild.fatherName !== "-" ? selectedChild.fatherName : "Não informado"}
-            </p>
-            <p>
-              <strong>Telefone Pai:</strong>{" "}
-              {selectedChild.fatherPhone !== "-" ? selectedChild.fatherPhone : "Não informado"}
-            </p>
-            <p>
-              <strong>Nome da Mãe:</strong>{" "}
-              {selectedChild.motherName !== "-" ? selectedChild.motherName : "Não informado"}
-            </p>
-            <p>
-              <strong>Telefone Mãe:</strong>{" "}
-              {selectedChild.motherPhone !== "-" ? selectedChild.motherPhone : "Não informado"}
-            </p>
-
-            <div className="mt-4 flex justify-end">
-              <button
-                onClick={() => setSelectedChild(null)}
-                className="p-2 bg-gray-400 text-white rounded hover:bg-gray-500 transition-all"
-              >
-                Fechar
-              </button>
-            </div>
+            {childStats && (
+              <>
+                <p><strong>Tempo com a gente:</strong> {childStats.tempoMatriculado}</p>
+                <p><strong>Total arrecadado:</strong> {formatCurrency(Number(childStats.valorArrecadado))}</p>
+              </>
+            )}
+            <p><strong>Nome do Pai:</strong> {selectedChild.fatherName !== "-" ? selectedChild.fatherName : "Não informado"}</p>
+            <p><strong>Telefone Pai:</strong> {selectedChild.fatherPhone !== "-" ? selectedChild.fatherPhone : "Não informado"}</p>
+            <p><strong>Nome da Mãe:</strong> {selectedChild.motherName !== "-" ? selectedChild.motherName : "Não informado"}</p>
+            <p><strong>Telefone Mãe:</strong> {selectedChild.motherPhone !== "-" ? selectedChild.motherPhone : "Não informado"}</p>
           </div>
         </div>
       )}
