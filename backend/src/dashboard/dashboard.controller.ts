@@ -1,4 +1,4 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import { Controller, Get, Param, Query } from '@nestjs/common';
 import { DashboardService } from './dashboard.service';
 
 @Controller('dashboard')
@@ -45,6 +45,15 @@ export class DashboardController {
 ) {
   return this.dashboardService.getChildrenStatus(month, year);
 }
+
+@Get('child-stats/:id')
+  async getChildStats(@Param('id') childId: string) {
+    const id = parseInt(childId, 10);
+    if (isNaN(id)) {
+      return { error: "ID inválido." };
+    }
+    return this.dashboardService.getChildStats(id);
+  }
 
 
 }

@@ -220,8 +220,43 @@ const totalExpensesFixed = totalExpensesFixedQuery?.total ? parseFloat(totalExpe
     };
   })
   .sort((a, b) => Number(a.dueDate ?? 0) - Number(b.dueDate ?? 0));
-
   }
+
+
+async getChildStats(childId: number) {
+  const child = await this.childRepository.findOne({ where: { id: childId } });
+  if (!child) {
+    throw new Error("Criança não encontrada");
+  }
+
+  const today = new Date();
+  const enrollmentDate = new Date(child.enrollmentDate);
+  const diffYears = today.getFullYear() - enrollmentDate.getFullYear();
+  const diffMonths = today.getMonth() - enrollmentDate.getMonth() + diffYears * 12;
+  const years = Math.floor(diffMonths / 12);
+  const months = diffMonths % 12;
+
+  const tempoMatriculado = `${years > 0 ? `${years} ano${years > 1 ? 's' : ''}` : ''}${
+    years > 0 && months > 0 ? ' e ' : ''
+  }${months > 0 ? `${months} mês${months > 1 ? 'es' : ''}` : ''}` || 'Menos de 1 mês';
+
+  const arrecadacao = await this.financeRepository
+    .createQueryBuilder("finance")
+    .select("SUM(finance.amount)", "total")
+    .where("finance.childId = :childId", { childId })
+    .andWhere("finance.type = 'Faturamento'")
+    .getRawOne();
+
+  const valorArrecadado = arrecadacao?.total ? parseFloat(arrecadacao.total).toFixed(2) : "0.00";
+
+  return {
+    tempoMatriculado,
+    valorArrecadado,
+  };
+}
+
+
+  
   
   
 }
