@@ -59,8 +59,8 @@ export class DashboardService {
 
   async getStatsByMonth(month: number) {
     const year = new Date().getFullYear();
-    const startDate = new Date(year, month - 1, 1, 0, 0, 0);
-    const endDate = new Date(year, month, 0, 23, 59, 59);
+    const startDate = this.setStartOfMonth(year, month);
+    const endDate = this.setEndOfMonth(year, month);
 
     // 🔹 Obtendo valores brutos
     const [totalChildren, totalRevenue, totalExpenses] = await Promise.all([
@@ -74,8 +74,8 @@ export class DashboardService {
   // 🔹 Obtendo valores do mês anterior
   const prevMonth = month === 1 ? 12 : month - 1;
   const prevYear = month === 1 ? year - 1 : year;
-  const prevStartDate = new Date(prevYear, prevMonth - 1, 1, 0, 0, 0);
-  const prevEndDate = new Date(prevYear, prevMonth, 0, 23, 59, 59);
+  const prevStartDate = this.setStartOfMonth(prevYear, prevMonth);
+    const prevEndDate = this.setEndOfMonth(prevYear, prevMonth);
 
   const prevTotalRevenue = await this.getSumByType('Faturamento', prevStartDate, prevEndDate);
   const prevTotalExpenses = await this.getSumByType('Despesa', prevStartDate, prevEndDate);
@@ -174,36 +174,6 @@ const totalExpensesFixed = totalExpensesFixedQuery?.total ? parseFloat(totalExpe
     });
   }
 
-  async getChildrenPaymentStatus(month: number) {
-    const year = new Date().getFullYear();
-    const startDate = new Date(year, month - 1, 1, 0, 0, 0);
-    const endDate = new Date(year, month, 0, 23, 59, 59);
-
-    const result = await this.financeRepository
-        .createQueryBuilder("finance")
-        .innerJoinAndSelect("finance.child", "child")
-        .where("finance.type = :type", { type: "Faturamento" })
-        .andWhere("finance.date BETWEEN :startDate AND :endDate", { startDate, endDate })
-        .select([
-            "child.id AS id",
-            "child.fullName AS fullName",
-            "child.dueDate AS dueDate",
-            "finance.date AS date",
-            "finance.amount AS amount",
-        ])
-        .orderBy("child.dueDate", "ASC")
-        .getRawMany();
-
-    return result.map(child => ({
-        id: child.id,
-        fullName: child.fullName,
-        dueDate: child.dueDate,
-        date: child.date ? new Date(child.date).toISOString().split("T")[0] : "", // Formatar a data
-        amount: child.amount ? parseFloat(child.amount).toFixed(2) : "", // Garantir que amount seja formatado corretamente
-        Status: "Pago" // Como estamos filtrando apenas os pagos, sempre retornará "Pago"
-    }));
-}
-
   async getAverageTuitionFee() {
     const result = await this.childRepository
       .createQueryBuilder('child')
@@ -223,5 +193,35 @@ const totalExpensesFixed = totalExpensesFixedQuery?.total ? parseFloat(totalExpe
       },
     });
   }
+
+  async getChildrenStatus(month: number, year: number): Promise<any[]> {
+    const inicio = new Date(year, month - 1, 1);
+    const fim = new Date(year, month, 0, 23, 59, 59); // último dia do mês
+  
+    const children = await this.childRepository.find();
+    const finances = await this.financeRepository.find({
+      relations: ['child', 'category'],
+      where: {
+        date: Between(inicio, fim),
+        type: 'Faturamento'
+      },
+    });
+  
+    return children
+    .map((child) => {
+    const pagamento = finances.find(f => f.child?.id === child.id);
+
+    return {
+      fullName: child.fullName,
+      dueDate: child.dueDate ? Number(child.dueDate) : null,
+      paymentDate: pagamento?.date || null,
+      amountPaid: pagamento?.amount || 0,
+      status: pagamento ? "Pago" : "Pendente"
+    };
+  })
+  .sort((a, b) => Number(a.dueDate ?? 0) - Number(b.dueDate ?? 0));
+
+  }
+  
   
 }
